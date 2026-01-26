@@ -28,6 +28,9 @@ Related:
 | D14 | API 配置指南 | API 配置规范与安全要求清晰 | guide doc | doc/00_project/initiative_quantum_x/API_CONFIGURATION_GUIDE.md |
 | D15 | 默认 MVP 范围 | 默认范围与覆盖方式清晰 | scope doc | doc/00_project/initiative_quantum_x/DEFAULT_MVP_SCOPE.md |
 | D16 | Venue Adapter 组件 | 组件设计/接口/配置/运行手册齐全 | component docs | doc/20_components/venue_adapter/* |
+| D17 | 前端 SOTA 调研 | TradingView/Bloomberg/Binance 等世界级平台研究完成 | research notes | doc/00_project/initiative_quantum_x/notes.md |
+| D18 | 前端架构设计 | Next.js 15 + shadcn/ui + TradingView Charts 技术选型确定 | design doc | doc/10_features/frontend/design.md |
+| D19 | 前端 MVP 实现 | 8 页面构建成功、Playwright 验证通过 | build logs + verification | frontend/src/app/* |
 
 # Release/Deployment Notes (if applicable)
 - rollout strategy: N/A (planning phase)
@@ -46,3 +49,5 @@ Related:
 - 2026-01-25: added contracts deliverable.
 - 2026-01-25: added MVP milestone and verification deliverables.
 - 2026-01-25: added API config/default scope/venue adapter deliverables.
+- 2026-01-26: added frontend SOTA research, architecture design, and MVP implementation deliverables (D17-D19).
+- 2026-01-26: frontend MVP verified: 8 pages working, TradingView charts integrated, Playwright tests passed.
