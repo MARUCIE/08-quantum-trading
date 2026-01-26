@@ -49,6 +49,7 @@ Related:
 | D35 | UI/UX: 加载状态 | Dashboard 骨架屏组件 | code | frontend/src/components/dashboard/loading-skeletons.tsx |
 | D36 | UI/UX: 微交互动画 | 卡片悬浮、按钮反馈、渐入动画 | code | frontend/src/app/globals.css (animations) |
 | D37 | UI/UX: 动画数字组件 | 数值变化动画、货币/百分比变体 | code | frontend/src/components/ui/animated-number.tsx |
+| D38 | UI/UX: 无障碍访问 (a11y) | Skip link、ARIA labels、键盘导航 | code | frontend/src/components/layout/skip-link.tsx |
 
 # Release/Deployment Notes
 - rollout strategy: Local development → Paper trading → Testnet → Production

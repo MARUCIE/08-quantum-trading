@@ -62,7 +62,7 @@ Related:
 | T37 | UI/UX: Responsive design | ai-agent | T36 | medium | mobile nav drawer, responsive header | Done |
 | T38 | UI/UX: Loading states | ai-agent | T37 | medium | skeleton components for all dashboard elements | Done |
 | T39 | UI/UX: Micro-interactions | ai-agent | T38 | low | hover effects, animations, tooltips | Done |
-| T40 | UI/UX: Accessibility (a11y) | ai-agent | T39 | medium | keyboard navigation, ARIA labels | Pending |
+| T40 | UI/UX: Accessibility (a11y) | ai-agent | T39 | medium | keyboard navigation, ARIA labels | Done |
 | T41 | UI/UX: Form validation | ai-agent | T40 | medium | input states, error handling | Pending |
 | T42 | Performance optimization | ai-agent | T41 | medium | code splitting, lazy loading | Pending |
 
