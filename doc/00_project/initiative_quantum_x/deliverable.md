@@ -2,8 +2,8 @@
 Title: Deliverables - initiative_quantum_x
 Scope: project
 Owner: ai-agent
-Status: active
-LastUpdated: 2026-01-25
+Status: complete
+LastUpdated: 2026-01-26
 Related:
   - /doc/00_project/initiative_quantum_x/task_plan.md
   - /doc/00_project/initiative_quantum_x/notes.md
@@ -31,11 +31,25 @@ Related:
 | D17 | 前端 SOTA 调研 | TradingView/Bloomberg/Binance 等世界级平台研究完成 | research notes | doc/00_project/initiative_quantum_x/notes.md |
 | D18 | 前端架构设计 | Next.js 15 + shadcn/ui + TradingView Charts 技术选型确定 | design doc | doc/10_features/frontend/design.md |
 | D19 | 前端 MVP 实现 | 8 页面构建成功、Playwright 验证通过 | build logs + verification | frontend/src/app/* |
+| D20 | 资产类别与合规决策 | Phase 1 资产范围与合规约束明确 | decision doc | doc/00_project/initiative_quantum_x/ASSET_COMPLIANCE_DECISION.md |
+| D21 | 数据供应商配置 | Binance API 配置与质量门禁定义 | config doc | doc/00_project/initiative_quantum_x/DATA_VENDOR_CONFIG.md |
+| D22 | 风控与资金配置 | 四层风控参数与资金分配策略 | config doc | doc/00_project/initiative_quantum_x/RISK_CAPITAL_CONFIG.md |
+| D23 | E1 Data Baseline | Binance REST/WS + Pipeline + Storage | code | backend/src/data/* |
+| D24 | E2 Feature Store | 8种指标 + 版本管理 + 漂移检测 | code | backend/src/features/* |
+| D25 | E3 Research Pipeline | 回测引擎 + 模型注册表 | code | backend/src/research/* |
+| D26 | E4 Strategy MVP | Momentum + MeanReversion 策略 | code | backend/src/strategy/* |
+| D27 | E5 Execution Parity | Order Manager + Paper Trading | code | backend/src/execution/* |
+| D28 | E6 Risk & Monitoring | Checker + Monitor + Audit Logger | code | backend/src/risk/* |
+| D29 | E7 Venue Adapter | Paper Trading Adapter | code | backend/src/execution/paper-trading.ts |
+| D30 | Frontend API 集成 | TanStack Query Hooks + API Client | code | frontend/src/lib/api/* |
+| D31 | Backend REST API | HTTP Server + Routes (15 endpoints) | code | backend/src/api/* |
+| D32 | MVP E2E 验证报告 | TypeScript 编译 + Build 验证通过 | verification report | doc/00_project/initiative_quantum_x/MVP_VERIFICATION_REPORT.md |
 
-# Release/Deployment Notes (if applicable)
-- rollout strategy: N/A (planning phase)
-- rollback steps: N/A (planning phase)
-- monitoring: N/A (planning phase)
+# Release/Deployment Notes
+- rollout strategy: Local development → Paper trading → Testnet → Production
+- startup: Backend `npm run dev` (port 3001) → Frontend `npm run dev` (port 3000)
+- rollback steps: Git revert to previous commit
+- monitoring: Risk events via /api/risk/events, Audit logs in ./audit/
 
 ## Changelog
 - 2026-01-24: initialized. (reason: planning-with-files)
@@ -51,3 +65,5 @@ Related:
 - 2026-01-25: added API config/default scope/venue adapter deliverables.
 - 2026-01-26: added frontend SOTA research, architecture design, and MVP implementation deliverables (D17-D19).
 - 2026-01-26: frontend MVP verified: 8 pages working, TradingView charts integrated, Playwright tests passed.
+- 2026-01-26: added backend implementation deliverables (D20-D32): E1-E7 Epic code, API integration, verification report.
+- 2026-01-26: MVP implementation complete. All 32 deliverables ready.

@@ -46,6 +46,18 @@ Related:
 | T21 | Frontend MVP implementation | ai-agent | T20 | high | Next.js app builds successfully | Done |
 | T22 | Frontend pages: Overview, Strategies, Trading, Risk | ai-agent | T21 | high | all core pages implemented | Done |
 | T23 | Frontend pages: Backtest, Copy, Settings, Alerts | ai-agent | T21 | medium | all secondary pages implemented | Done |
+| T24 | Asset class & compliance scope | ai-agent | T23 | low | decision doc exists | Done |
+| T25 | Select data vendors | ai-agent | T24 | medium | data sources configured | Done |
+| T26 | Risk limits & capital allocation | ai-agent | T24 | medium | risk parameters defined | Done |
+| T27 | E1 Data Baseline implementation | ai-agent | T25 | high | data pipeline working | Done |
+| T28 | E2 Feature Store implementation | ai-agent | T27 | high | feature versioning working | Done |
+| T29 | E3 Research Pipeline implementation | ai-agent | T28 | high | experiments reproducible | Done |
+| T30 | E4 Strategy MVP implementation | ai-agent | T29 | high | baseline strategy passing gates | Done |
+| T31 | E5 Execution Parity implementation | ai-agent | T30,T26 | high | paper trading working | Done |
+| T32 | E6 Risk & Monitoring implementation | ai-agent | T31 | high | risk controls auditable | Done |
+| T33 | E7 Venue Adapter implementation | ai-agent | T25 | medium | exchange API connected | Done |
+| T34 | Frontend API integration | ai-agent | T32,T33 | high | frontend connected to backend | Done |
+| T35 | MVP end-to-end verification | ai-agent | T34 | high | all gates passing | Done |
 
 # Milestones
 - M1: Docs baseline complete (PDCA + PRD + architecture + UX)
@@ -60,6 +72,9 @@ Related:
 - M10: MVP milestones and verification defined
 - M11: API config and venue adapter defined
 - M12: Frontend MVP implementation complete (8 pages, TradingView charts, dark theme)
+- M13: Backend Epic implementation complete (E1-E7: Data, Features, Research, Strategy, Execution, Risk, Venue)
+- M14: Frontend-Backend API integration complete
+- M15: MVP end-to-end verification passed
 
 # Risks & Mitigations
 - R1: Overfitting and backtest bias / mitigation: robust validation and walk-forward
@@ -95,6 +110,8 @@ Related:
 - 2026-01-26: completed frontend SOTA research (TradingView, Bloomberg, Binance patterns).
 - 2026-01-26: completed frontend architecture design and MVP implementation.
 - 2026-01-26: implemented 8 pages: Overview, Strategies, Trading, Risk, Backtest, Copy, Settings, Alerts.
+- 2026-01-26: completed T24-T35 (Asset/Compliance scope, Data vendors, Risk config, E1-E7 implementation, API integration, E2E verification).
+- 2026-01-26: MVP implementation complete. All 35 tasks done.
 
 ## Engineering Protocol
 
