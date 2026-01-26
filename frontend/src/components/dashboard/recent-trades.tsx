@@ -18,11 +18,11 @@ export function RecentTrades({ trades }: RecentTradesProps) {
     }).format(value);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 stagger-children">
       {trades.map((trade) => (
         <div
           key={trade.id}
-          className="flex items-center justify-between rounded-lg border border-border p-3"
+          className="flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-accent/50 cursor-pointer"
         >
           <div className="flex items-center gap-3">
             <Badge
@@ -40,7 +40,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
             </div>
           </div>
           <div className="text-right">
-            <p className="font-mono text-sm">
+            <p className="font-mono text-sm tabular-nums">
               {trade.quantity} @ {formatCurrency(trade.price)}
             </p>
             <p className="text-xs text-muted-foreground">

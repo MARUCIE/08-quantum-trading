@@ -39,8 +39,12 @@ export function PositionsTable({ positions }: PositionsTableProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {positions.map((position) => (
-          <TableRow key={position.symbol}>
+        {positions.map((position, index) => (
+          <TableRow
+            key={position.symbol}
+            className="table-row-hover cursor-pointer"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
             <TableCell className="font-medium">{position.symbol}</TableCell>
             <TableCell>
               <Badge
@@ -50,19 +54,19 @@ export function PositionsTable({ positions }: PositionsTableProps) {
                 {position.side.toUpperCase()}
               </Badge>
             </TableCell>
-            <TableCell className="text-right font-mono">
+            <TableCell className="text-right font-mono tabular-nums">
               {position.quantity}
             </TableCell>
-            <TableCell className="text-right font-mono">
+            <TableCell className="text-right font-mono tabular-nums">
               {formatCurrency(position.entryPrice)}
             </TableCell>
-            <TableCell className="text-right font-mono">
+            <TableCell className="text-right font-mono tabular-nums">
               {formatCurrency(position.currentPrice)}
             </TableCell>
             <TableCell className="text-right">
               <div
                 className={cn(
-                  "font-mono",
+                  "font-mono tabular-nums",
                   position.unrealizedPnl >= 0 ? "text-profit" : "text-loss"
                 )}
               >
