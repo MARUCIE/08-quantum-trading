@@ -30,6 +30,10 @@
 - doc/00_project/initiative_quantum_x/task_plan.md
 - doc/00_project/initiative_quantum_x/notes.md
 - doc/00_project/initiative_quantum_x/deliverable.md
+- doc/00_project/initiative_quantum_x/ASSET_COMPLIANCE_DECISION.md
+- doc/00_project/initiative_quantum_x/DATA_VENDOR_CONFIG.md
+- doc/00_project/initiative_quantum_x/RISK_CAPITAL_CONFIG.md
+- doc/00_project/initiative_quantum_x/MVP_VERIFICATION_REPORT.md
 - doc/10_features/index.md
 - doc/10_features/data_platform/index.md
 - doc/10_features/data_platform/design.md
