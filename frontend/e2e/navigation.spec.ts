@@ -29,8 +29,8 @@ test.describe("Navigation", () => {
     // Verify URL changed
     await expect(page).toHaveURL("/strategies");
 
-    // Verify page content
-    await expect(page.getByRole("heading", { name: "Strategies" })).toBeVisible();
+    // Wait for page to hydrate and verify content
+    await expect(page.getByRole("heading", { name: "Strategies" })).toBeVisible({ timeout: 10000 });
   });
 
   test("should navigate to Trading page", async ({ page }) => {
@@ -39,7 +39,8 @@ test.describe("Navigation", () => {
     await page.getByRole("link", { name: /trading/i }).click();
 
     await expect(page).toHaveURL("/trading");
-    await expect(page.getByRole("heading", { name: "Trading" })).toBeVisible();
+    // Wait for page to hydrate with WebSocket data
+    await expect(page.getByRole("heading", { name: "Trading" })).toBeVisible({ timeout: 10000 });
   });
 
   test("should navigate to Risk page", async ({ page }) => {
@@ -57,7 +58,8 @@ test.describe("Navigation", () => {
     await page.getByRole("link", { name: /backtest/i }).click();
 
     await expect(page).toHaveURL("/backtest");
-    await expect(page.getByRole("heading", { name: "Backtest" })).toBeVisible();
+    // Wait for page to hydrate
+    await expect(page.getByRole("heading", { name: "Backtest" })).toBeVisible({ timeout: 10000 });
   });
 
   test("should navigate to Copy Trading page", async ({ page }) => {
@@ -104,13 +106,15 @@ test.describe("Mobile Navigation", () => {
     // Open mobile menu
     await page.getByRole("button", { name: /menu/i }).click();
 
-    // Navigation drawer should be visible
-    await expect(page.getByRole("navigation", { name: /mobile/i })).toBeVisible();
+    // Wait for navigation drawer to animate open
+    await expect(page.getByRole("navigation", { name: /mobile/i })).toBeVisible({ timeout: 5000 });
 
-    // Click a link to close
-    await page.getByRole("link", { name: /strategies/i }).click();
+    // Click a link to close - wait for it to be visible first
+    const strategiesLink = page.getByRole("link", { name: /strategies/i });
+    await expect(strategiesLink).toBeVisible({ timeout: 5000 });
+    await strategiesLink.click();
 
     // Verify navigation
-    await expect(page).toHaveURL("/strategies");
+    await expect(page).toHaveURL("/strategies", { timeout: 10000 });
   });
 });
