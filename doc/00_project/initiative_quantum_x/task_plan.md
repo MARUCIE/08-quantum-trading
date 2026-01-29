@@ -139,6 +139,7 @@ Related:
 | T113 | Sidebar navigation optimization | ai-agent | T37 | medium | collapsible groups, reduced density, touch-friendly | Done |
 | T114 | UI/UX composition/hierarchy audit | ai-agent | T113 | medium | apply ui-skills, web-interface-guidelines | Done |
 | T115 | UI/UX SOP accounts page alignment + evidence | ai-agent | T114 | low | spacing baseline + single primary action verified | Done |
+| T116 | Network check + market fallback | ai-agent | T115 | medium | no 4xx/5xx on UI routes and market endpoints | Done |
 | T116 | Performance baseline definition | ai-agent | T60 | medium | define KPIs, thresholds, and measurement methodology | Done |
 | T117 | Backend load testing | ai-agent | T116 | high | API endpoint stress test with k6/artillery | Done |
 | T118 | WebSocket throughput benchmark | ai-agent | T116 | high | message rate, latency percentiles, connection limits | Done |
@@ -149,6 +150,11 @@ Related:
 | T123 | Optimize icon bundling | ai-agent | T121 | medium | selective lucide-react imports | Done |
 | T124 | Add preload hints | ai-agent | T122 | medium | preload critical CSS/fonts | Done |
 | T125 | Performance verification | ai-agent | T124 | high | re-run Lighthouse, verify LCP < 2.5s | Done |
+| T126 | Streaming SSR with Suspense | ai-agent | T125 | high | add Suspense boundaries for progressive loading | Done |
+| T127 | Critical CSS optimization | ai-agent | T126 | medium | inline critical CSS, defer non-critical | Done |
+| T128 | Image optimization | ai-agent | T126 | medium | convert to next/image, add lazy loading | Done |
+| T129 | Font preload optimization | ai-agent | T127 | low | preload fonts, optimize loading strategy | Done |
+| T130 | Final performance verification | ai-agent | T129 | high | verify LCP < 2.5s, Performance > 80 | Done |
 
 # Milestones
 - M1: Docs baseline complete (PDCA + PRD + architecture + UX)
@@ -321,3 +327,4 @@ Output
 - [x] Auth forms: noValidate + aria-label improvements
 - 2026-01-28: Implemented account store + API + UI (accounts page + switcher), added sim/real gating and OpenAPI updates, fixed paper-service price refresh, updated trading store tests.
 - 2026-01-28: UI/UX SOP for `/accounts` (spacing aligned to `space-y-6`, single primary action), Playwright evidence run (chromium) pass.
+- 2026-01-28: Network check passed (frontend + API), added market endpoint graceful fallback to avoid 5xx on upstream 451.

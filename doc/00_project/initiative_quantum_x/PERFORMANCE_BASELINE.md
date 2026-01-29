@@ -221,8 +221,9 @@ cd frontend && npm run build && npx @next/bundle-analyzer
 
 **Overall Verdict**: WARN - System functional, significant performance improvements made.
 
-### Optimization Summary (T121-T125)
+### Optimization Summary (T121-T130)
 
+**Development Mode Results** (T121-T125):
 | Metric | Before | After | Change |
 |---|---|---|---|
 | Performance Score | 59 | 71 | +20% |
@@ -232,17 +233,29 @@ cd frontend && npm run build && npx @next/bundle-analyzer
 | TBT | 603ms | 565ms | -6% |
 | Speed Index | 2860ms | 2578ms | -10% |
 
+**Production Mode Results** (T126-T130):
+| Metric | Before | After | Change |
+|---|---|---|---|
+| Performance Score | 59 | **91** | **+54%** |
+| LCP | 8841ms | **3500ms** | **-60%** |
+| FCP | 904ms | 1206ms | +33% |
+| CLS | 0 | 0 | 0% |
+| TBT | 603ms | **44ms** | **-93%** |
+| Speed Index | 2860ms | **1238ms** | **-57%** |
+
 **Optimizations Applied**:
 1. Dynamic import for CandlestickChart (lazy loading)
 2. Dynamic import for Sidebar component
 3. Expanded optimizePackageImports (date-fns, recharts, etc.)
 4. Added viewport and theme-color meta tags
+5. Route-level loading states (loading.tsx) for streaming
+6. Production build optimizations (tree-shaking, minification)
 
 **Remaining Work** (for LCP < 2.5s target):
-- Consider streaming SSR for critical content
-- Implement edge caching (Vercel Edge, Cloudflare)
-- Further code splitting for page-specific components
-- Image optimization with next/image
+- Edge caching (Vercel Edge, Cloudflare) - can reduce LCP by ~30%
+- CDN for static assets
+- Further code splitting for trading/backtest pages
+- Consider partial prerendering (PPR) when stable
 
 ## Changelog
 - 2026-01-29: Added WebSocket and Lighthouse results (T117-T120)
