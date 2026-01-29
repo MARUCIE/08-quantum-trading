@@ -10,6 +10,56 @@ Related:
 
 # Session Log
 
+## 2026-01-29: T116-T120 Performance Benchmarking
+
+### T116 Performance Baseline Definition
+- Created `PERFORMANCE_BASELINE.md` with KPIs, thresholds, and methodology
+- Defined acceptance criteria for API, WebSocket, Frontend, and Bundle metrics
+
+### T117 Backend Load Testing
+| Endpoint | P50 | P95 | Throughput | Error Rate | Status |
+|---|---|---|---|---|---|
+| /api/health | 10.55ms | 14.47ms | 5238 rps | 2% | WARN |
+| /api/accounts | 15.25ms | 15.71ms | 2559 rps | 8% | WARN |
+
+**Findings**:
+- Latency excellent (P95 < 20ms)
+- Error rate high under concurrent load (2-8%)
+- Server stability issues under load
+
+### T118 WebSocket Benchmark
+| Metric | Value | Target | Status |
+|---|---|---|---|
+| Connection | 100% success | - | PASS |
+| Latency P50 | 3ms | < 50ms | PASS |
+| Latency P95 | 3ms | < 100ms | PASS |
+| Throughput | 0.4 msg/s | > 50 msg/s | WARN (testnet) |
+
+### T119 Frontend Lighthouse Audit
+| Metric | Value | Target | Status |
+|---|---|---|---|
+| Performance | 59/100 | > 80 | FAIL |
+| FCP | 904ms | < 1.8s | PASS |
+| LCP | 8841ms | < 2.5s | FAIL |
+| CLS | 0 | < 0.1 | PASS |
+| Bundle Size | 1.66 MB | < 500KB | FAIL |
+
+### T120 Performance Report Summary
+- **Overall Verdict**: WARN - Functional but needs optimization
+- **Critical Issues**: LCP 8.8s, Bundle size 1.66MB
+- **Optimization Priorities**: Code splitting, lazy loading, image optimization
+
+### Three-End Consistency (2026-01-29)
+| Endpoint | SHA | Status |
+|---|---|---|
+| Local | 6e8ab8f | OK |
+| GitHub | 6e8ab8f | OK |
+| Production | N/A | Not deployed |
+
+Commit: `feat(perf): complete T117-T120 performance benchmarks`
+
+---
+
 ## 2026-01-28: T112 Delivery SOP + Verification
 
 ### Round 1: ai check
