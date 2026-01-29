@@ -81,9 +81,14 @@ Related:
 | D67 | 账户切换与接入 UI | 前端账户切换、接入状态与风控提示 | code | frontend/src/app/accounts/page.tsx, frontend/src/components/accounts/account-switcher.tsx, frontend/src/components/layout/*, frontend/src/lib/api/hooks/use-accounts.ts |
 | D68 | 账户模式验证证据 | UX Map 模拟测试 + ai check 通过 | evidence | doc/00_project/initiative_quantum_x/notes.md |
 | D69 | UI/UX SOP 证据 | `/accounts` 间距与主按钮层级一致性验证 | evidence | doc/00_project/initiative_quantum_x/notes.md, .mcp/screenshots/2026-01-28/ |
+| D70 | 市场数据降级 | 上游不可用时返回空数据/缓存，避免 5xx | code+evidence | backend/src/api/routes.ts, doc/00_project/initiative_quantum_x/notes.md |
 | D70 | Risk/Audit 集成 | RiskChecker + AuditLogger 集成订单提交流 + /api/risk/status 端点 | code | backend/src/api/routes.ts |
 | D71 | 账户流程 E2E 测试 | 65 测试用例覆盖表单/验证/切换/可访问性/移动端 | code | frontend/e2e/account-flows.spec.ts |
 | D72 | 交付验证证据 | Round 1 ai check + Round 2 UX Map 模拟（8 张截图） | evidence | doc/00_project/initiative_quantum_x/notes.md, frontend/.mcp/screenshots/2026-01-28/ |
+| D73 | 性能基线定义 | KPI/阈值/测量方法/报告格式清晰 | docs | doc/00_project/initiative_quantum_x/PERFORMANCE_BASELINE.md |
+| D74 | 动态导入优化 | CandlestickChart + Sidebar 延迟加载 | code | frontend/src/components/charts/dynamic-candlestick-chart.tsx, frontend/src/components/layout/dynamic-sidebar.tsx |
+| D75 | Route-level Loading States | trading/backtest 页面骨架屏 | code | frontend/src/app/trading/loading.tsx, frontend/src/app/backtest/loading.tsx |
+| D76 | 性能优化验证结果 | Performance 91, LCP 3.5s, TBT 44ms | evidence | doc/00_project/initiative_quantum_x/PERFORMANCE_BASELINE.md |
 
 # Release/Deployment Notes
 - rollout strategy: Local development → Paper trading → Testnet → Production
@@ -118,4 +123,6 @@ Related:
 - 2026-01-28: Updated D62, added D63-D64: Auth E2E fixes (aria-label, noValidate, branding selector), Card semantic fix (div→h3). **308/308 E2E tests pass (100%)**.
 - 2026-01-28: Added D65-D68 for account modes (sim/real) delivery scope.
 - 2026-01-28: Added D69 for UI/UX SOP evidence on `/accounts` (spacing + primary action).
+- 2026-01-28: Added D70 for market data graceful degradation (no 5xx on upstream 451).
 - 2026-01-28: Added D70-D72 for T110-T112: Risk/Audit integration, Account flows E2E tests, Delivery verification evidence. **419/419 E2E tests pass**.
+- 2026-01-29: Added D73-D76 for T116-T130: Performance baseline definition, dynamic imports, route-level loading states, optimization results. **Performance 91, LCP 3.5s (-60%), TBT 44ms (-93%)**.

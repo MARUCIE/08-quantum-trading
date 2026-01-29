@@ -22,6 +22,11 @@
 | REQ-017 | 2026-01-28 | Risk/Audit 集成：订单提交前风险校验 + 审计日志 | P0 | Done | User | T110 RiskChecker + AuditLogger 集成 |
 | REQ-018 | 2026-01-28 | 账户流程 E2E 测试：表单/验证/切换/可访问性/移动端 | P1 | Done | User | T111 account-flows.spec.ts 65 测试 |
 | REQ-019 | 2026-01-28 | 交付验证 SOP：Round 1 ai check + Round 2 UX Map 模拟 | P1 | Done | User | T112 419/419 E2E + 8 截图证据 |
+| REQ-020 | 2026-01-28 | 市场数据上游不可用时避免 5xx，返回空数据/缓存 | P1 | Done | User | network check + graceful fallback |
+| REQ-021 | 2026-01-29 | 性能基线定义与优化：LCP < 2.5s, Performance > 80 | P1 | Done | User | T116-T130, PERFORMANCE_BASELINE.md |
+| REQ-022 | 2026-01-29 | 动态导入重型组件：CandlestickChart, Sidebar 延迟加载 | P1 | Done | User | T121-T125, dynamic-candlestick-chart.tsx |
+| REQ-023 | 2026-01-29 | Route-level Loading States：trading/backtest 骨架屏 | P1 | Done | User | T126-T130, loading.tsx |
+| REQ-024 | 2026-01-29 | 生产模式性能验证：Performance 91, LCP 3.5s, TBT 44ms | P1 | Done | User | 目标 LCP 2.5s 需 Edge caching |
 
 ## Prompt Library
 ### Strategy Research
@@ -46,7 +51,11 @@
 
 ### UI/UX Audit
 - 目标: 对齐页面节奏与主按钮层级
-- Prompt: “Audit the page for spacing baseline consistency and primary action hierarchy. List violations and minimal fixes.”
+- Prompt: "Audit the page for spacing baseline consistency and primary action hierarchy. List violations and minimal fixes."
+
+### Performance Optimization
+- 目标: 识别性能瓶颈并应用优化
+- Prompt: "Run Lighthouse audit in production mode. Identify LCP/TBT bottlenecks. Apply dynamic imports for heavy components and add route-level loading states. Verify improvements with before/after metrics."
 
 ## Anti-Regression Q&A
 | ID | Symptom | Root Cause | Fix | Verification | Prevention | Trigger |
@@ -57,6 +66,9 @@
 | AR-004 | 模拟订单进入实盘或反向混用 | 账户模式隔离缺失/校验不一致 | 增加环境标识与执行前硬校验 | 对 sim/real 下单路径做对照测试 | 在执行层强制校验 + 审计告警 | "account_mode_leak" |
 | AR-005 | 提交模拟订单时报 ReferenceError | 多账户重构后 helper 未接入上下文变量 | refreshPrice 接受 context 并使用 adapter | TypeScript 编译 + 下单冒烟 | 添加 no-undef lint + 单测覆盖 submitPaperOrder | "adapter is not defined" |
 | AR-006 | 单页出现多个主按钮或节奏不一致 | 页面未遵循间距基线与按钮层级规范 | 统一 `space-y-6` 并降级次级按钮 | UI/UX 审计 + Playwright evidence | 在 SOP 中加入 UI audit checklist | "multiple_primary_actions" |
+| AR-007 | 市场数据接口返回 500 | 上游 Binance 451 导致未降级 | market endpoints 缓存/空数据降级 | `network-check.txt` 全部 200 | 上游不可用时返回 200 + 空数据 | "binance_451" |
+| AR-008 | Lighthouse 开发模式分数偏低 | 开发模式禁用 tree-shaking/minification | 必须在生产模式 (npm run build && npm start) 测试性能 | Lighthouse prod mode score > 80 | 性能基准文档明确要求生产模式测试 | "dev_mode_performance" |
+| AR-009 | LCP 超过 4s | 重型组件同步加载阻塞渲染 | 用 next/dynamic 延迟加载 Charts/Sidebar | Lighthouse LCP < 4s | 图表/侧边栏组件必须动态导入 | "lcp_timeout" |
 
 ## References
 - Lean (QuantConnect) engine
