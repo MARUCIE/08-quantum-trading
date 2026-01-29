@@ -147,8 +147,8 @@ Related:
 | T121 | Lazy load chart components | ai-agent | T120 | high | dynamic import CandlestickChart, Recharts | Done |
 | T122 | Code-split heavy pages | ai-agent | T121 | high | dynamic import trading/ml components | Done |
 | T123 | Optimize icon bundling | ai-agent | T121 | medium | selective lucide-react imports | Done |
-| T124 | Add preload hints | ai-agent | T122 | medium | preload critical CSS/fonts | In Progress |
-| T125 | Performance verification | ai-agent | T124 | high | re-run Lighthouse, verify LCP < 2.5s | Planned |
+| T124 | Add preload hints | ai-agent | T122 | medium | preload critical CSS/fonts | Done |
+| T125 | Performance verification | ai-agent | T124 | high | re-run Lighthouse, verify LCP < 2.5s | Done |
 
 # Milestones
 - M1: Docs baseline complete (PDCA + PRD + architecture + UX)

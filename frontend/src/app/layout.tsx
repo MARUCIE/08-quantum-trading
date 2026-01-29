@@ -1,12 +1,22 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import { Sidebar } from "@/components/layout/sidebar";
+import { DynamicSidebar } from "@/components/layout/dynamic-sidebar";
 import { Header } from "@/components/layout/header";
 import { SkipLink } from "@/components/layout/skip-link";
 import { Providers } from "@/components/providers";
 import "./globals.css";
+
+// Optimize viewport for faster rendering
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +52,7 @@ export default async function RootLayout({
           <Providers>
             <SkipLink />
             <div className="flex h-dvh overflow-hidden">
-              <Sidebar />
+              <DynamicSidebar />
               <div className="flex flex-1 flex-col overflow-hidden">
                 <Header />
                 <main
