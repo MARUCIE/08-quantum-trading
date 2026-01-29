@@ -2,8 +2,8 @@
 Title: Deliverables - initiative_quantum_x
 Scope: project
 Owner: ai-agent
-Status: complete
-LastUpdated: 2026-01-26
+Status: active
+LastUpdated: 2026-01-28
 Related:
   - /doc/00_project/initiative_quantum_x/task_plan.md
   - /doc/00_project/initiative_quantum_x/notes.md
@@ -76,6 +76,14 @@ Related:
 | D62 | E2E 测试验证 | 308/308 Playwright 测试通过（100%），含 console errors + performance | evidence | doc/00_project/initiative_quantum_x/notes.md |
 | D63 | Auth E2E 修复 | Password toggle aria-label + noValidate + branding selector | code | frontend/src/app/(auth)/*.tsx, frontend/e2e/auth.spec.ts |
 | D64 | Card 语义修复 | CardTitle 从 div 改为 h3，支持 heading role | code | frontend/src/components/ui/card.tsx |
+| D65 | 账户模式设计 | 模拟/实盘账户分离设计与边界定义 | docs | doc/00_project/initiative_quantum_x/PRD.md |
+| D66 | 账户接入与分离实现 | 后端账户模型与执行隔离可验证 | code | backend/src/accounts/*, backend/src/api/routes.ts, backend/src/execution/paper-service.ts, backend/src/risk/audit.ts, backend/docs/openapi.yaml |
+| D67 | 账户切换与接入 UI | 前端账户切换、接入状态与风控提示 | code | frontend/src/app/accounts/page.tsx, frontend/src/components/accounts/account-switcher.tsx, frontend/src/components/layout/*, frontend/src/lib/api/hooks/use-accounts.ts |
+| D68 | 账户模式验证证据 | UX Map 模拟测试 + ai check 通过 | evidence | doc/00_project/initiative_quantum_x/notes.md |
+| D69 | UI/UX SOP 证据 | `/accounts` 间距与主按钮层级一致性验证 | evidence | doc/00_project/initiative_quantum_x/notes.md, .mcp/screenshots/2026-01-28/ |
+| D70 | Risk/Audit 集成 | RiskChecker + AuditLogger 集成订单提交流 + /api/risk/status 端点 | code | backend/src/api/routes.ts |
+| D71 | 账户流程 E2E 测试 | 65 测试用例覆盖表单/验证/切换/可访问性/移动端 | code | frontend/e2e/account-flows.spec.ts |
+| D72 | 交付验证证据 | Round 1 ai check + Round 2 UX Map 模拟（8 张截图） | evidence | doc/00_project/initiative_quantum_x/notes.md, frontend/.mcp/screenshots/2026-01-28/ |
 
 # Release/Deployment Notes
 - rollout strategy: Local development → Paper trading → Testnet → Production
@@ -108,3 +116,6 @@ Related:
 - 2026-01-28: Added D59 (PDCA-1): Entry/contract alignment verified, architecture route table expanded from 5 to 47 routes.
 - 2026-01-28: Added D60-D62 (E2E tests): Playwright locale fix, StatsCard testid, 58/73 E2E tests pass with console/performance verification.
 - 2026-01-28: Updated D62, added D63-D64: Auth E2E fixes (aria-label, noValidate, branding selector), Card semantic fix (div→h3). **308/308 E2E tests pass (100%)**.
+- 2026-01-28: Added D65-D68 for account modes (sim/real) delivery scope.
+- 2026-01-28: Added D69 for UI/UX SOP evidence on `/accounts` (spacing + primary action).
+- 2026-01-28: Added D70-D72 for T110-T112: Risk/Audit integration, Account flows E2E tests, Delivery verification evidence. **419/419 E2E tests pass**.

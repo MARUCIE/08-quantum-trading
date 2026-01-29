@@ -17,28 +17,50 @@ interface TradeRecord {
   timestamp: number;
 }
 
-const adapter = new PaperTradingAdapter({
-  initialCapital: MVP_ACCOUNT_RISK.initialCapital,
-  commission: 0.001,
-  slippage: 0.0005,
-  latencyMs: 0,
-  fillProbability: 1,
-  rejectProbability: 0,
-});
+interface PaperContext {
+  adapter: PaperTradingAdapter;
+  orderManager: OrderManager;
+  trades: TradeRecord[];
+  peakEquity: number;
+}
 
-const orderManager = new OrderManager();
-orderManager.setAdapter(adapter);
+const contexts = new Map<string, PaperContext>();
 
-const trades: TradeRecord[] = [];
-let peakEquity = MVP_ACCOUNT_RISK.initialCapital;
+function createContext(initialCapital: number): PaperContext {
+  const adapter = new PaperTradingAdapter({
+    initialCapital,
+    commission: 0.001,
+    slippage: 0.0005,
+    latencyMs: 0,
+    fillProbability: 1,
+    rejectProbability: 0,
+  });
+  const orderManager = new OrderManager();
+  orderManager.setAdapter(adapter);
+  return {
+    adapter,
+    orderManager,
+    trades: [],
+    peakEquity: initialCapital,
+  };
+}
+
+function getContext(accountId: string, initialCapital?: number): PaperContext {
+  const existing = contexts.get(accountId);
+  if (existing) return existing;
+  const capital = initialCapital ?? MVP_ACCOUNT_RISK.initialCapital;
+  const context = createContext(capital);
+  contexts.set(accountId, context);
+  return context;
+}
 
 function normalizeSymbol(symbol: string): string {
   return symbol.replace('/', '').toUpperCase();
 }
 
-async function refreshPrice(symbol: string): Promise<void> {
+async function refreshPrice(context: PaperContext, symbol: string): Promise<void> {
   const ticker = await binanceClient.getTicker(normalizeSymbol(symbol));
-  adapter.setPrice(normalizeSymbol(symbol), ticker.last || ticker.bid);
+  context.adapter.setPrice(normalizeSymbol(symbol), ticker.last || ticker.bid);
 }
 
 function mapFillToTrade(fill: Fill, strategyId?: string): TradeRecord {
@@ -73,13 +95,17 @@ function mapPosition(position: Position): RiskAccountState['positions'][number] 
   };
 }
 
-export async function submitPaperOrder(request: Omit<OrderRequest, 'clientOrderId'> & { clientOrderId?: string }): Promise<Order> {
+export async function submitPaperOrder(
+  request: Omit<OrderRequest, 'clientOrderId'> & { clientOrderId?: string }
+): Promise<Order> {
+  const accountId = request.accountId || 'sim_default';
+  const context = getContext(accountId);
   const clientOrderId = request.clientOrderId || `client_${Date.now()}`;
   const normalizedSymbol = normalizeSymbol(request.symbol);
 
-  await refreshPrice(normalizedSymbol);
+  await refreshPrice(context, normalizedSymbol);
 
-  const order = await orderManager.submitOrder({
+  const order = await context.orderManager.submitOrder({
     ...request,
     clientOrderId,
     symbol: normalizedSymbol,
@@ -87,43 +113,48 @@ export async function submitPaperOrder(request: Omit<OrderRequest, 'clientOrderI
 
   if (order.fills.length > 0) {
     order.fills.forEach((fill) => {
-      trades.unshift(mapFillToTrade(fill, order.strategyId));
+      context.trades.unshift(mapFillToTrade(fill, order.strategyId));
     });
   }
 
-  const account = await adapter.getAccountState();
-  if (account.totalEquity > peakEquity) {
-    peakEquity = account.totalEquity;
+  const account = await context.adapter.getAccountState();
+  if (account.totalEquity > context.peakEquity) {
+    context.peakEquity = account.totalEquity;
   }
 
   return order;
 }
 
-export async function cancelPaperOrder(orderId: string): Promise<boolean> {
-  return orderManager.cancelOrder(orderId);
+export async function cancelPaperOrder(accountId: string, orderId: string): Promise<boolean> {
+  const context = getContext(accountId);
+  return context.orderManager.cancelOrder(orderId);
 }
 
-export function listPaperOrders(symbol?: string): Order[] {
-  return orderManager.getAllOrders(symbol);
+export function listPaperOrders(accountId: string, symbol?: string): Order[] {
+  const context = getContext(accountId);
+  return context.orderManager.getAllOrders(symbol);
 }
 
-export function listPaperTrades(limit: number = 100): TradeRecord[] {
-  return trades.slice(0, limit);
+export function listPaperTrades(accountId: string, limit: number = 100): TradeRecord[] {
+  const context = getContext(accountId);
+  return context.trades.slice(0, limit);
 }
 
-export async function getPaperPositions(): Promise<RiskAccountState['positions']> {
-  const positions = await adapter.getPositions();
+export async function getPaperPositions(accountId: string): Promise<RiskAccountState['positions']> {
+  const context = getContext(accountId);
+  const positions = await context.adapter.getPositions();
   return positions.filter((p) => p.quantity > 0).map(mapPosition);
 }
 
-export async function getPaperAccountState(): Promise<RiskAccountState> {
-  const account = await adapter.getAccountState();
-  const rawPositions = await adapter.getPositions();
+export async function getPaperAccountState(accountId: string): Promise<RiskAccountState> {
+  const context = getContext(accountId);
+  const account = await context.adapter.getAccountState();
+  const rawPositions = await context.adapter.getPositions();
   const positions = rawPositions.filter((p) => p.quantity > 0).map(mapPosition);
   const totalEquity = account.totalEquity;
   const cash = account.balances.find((b) => b.asset === 'USDT')?.free ?? totalEquity;
-  const drawdown = Math.max(0, peakEquity - totalEquity);
-  const drawdownPct = peakEquity > 0 ? drawdown / peakEquity : 0;
+  const drawdown = Math.max(0, context.peakEquity - totalEquity);
+  const drawdownPct = context.peakEquity > 0 ? drawdown / context.peakEquity : 0;
   const realizedPnl = rawPositions.reduce((sum, p) => sum + p.realizedPnl, 0);
 
   return {
@@ -136,11 +167,15 @@ export async function getPaperAccountState(): Promise<RiskAccountState> {
     realizedPnl,
     dailyPnl: 0,
     weeklyPnl: 0,
-    peakEquity,
+    peakEquity: context.peakEquity,
     drawdown,
     drawdownPct,
     openPositions: positions.length,
     positions,
     timestamp: Date.now(),
   };
+}
+
+export function ensurePaperAccount(accountId: string, initialCapital?: number): void {
+  getContext(accountId, initialCapital);
 }

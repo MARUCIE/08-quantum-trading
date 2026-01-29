@@ -9,7 +9,7 @@
 
 ## Path Index (AI-tools managed)
 <!-- AI-TOOLS-MANAGED:PATH_INDEX START -->
-- PROJECT_DIR: /Users/mauricewen/Projects/quantum x
+- PROJECT_DIR: /Users/mauricewen/Projects/08-quantum-trading
 - doc/index.md
 - doc/00_project/index.md
 - doc/00_project/initiative_quantum_x/index.md
@@ -30,6 +30,7 @@
 - doc/00_project/initiative_quantum_x/task_plan.md
 - doc/00_project/initiative_quantum_x/notes.md
 - doc/00_project/initiative_quantum_x/deliverable.md
+- doc/00_project/initiative_quantum_x/REQUIREMENT_CONFIRMATION_ZH_FR.md
 - doc/00_project/initiative_quantum_x/ASSET_COMPLIANCE_DECISION.md
 - doc/00_project/initiative_quantum_x/DATA_VENDOR_CONFIG.md
 - doc/00_project/initiative_quantum_x/RISK_CAPITAL_CONFIG.md

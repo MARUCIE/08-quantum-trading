@@ -1,13 +1,14 @@
 # SYSTEM_ARCHITECTURE - quantum_x
 
 <!-- AI-TOOLS-MANAGED:PROJECT_DIR START -->
-- PROJECT_DIR: /Users/mauricewen/Projects/quantum x
+- PROJECT_DIR: /Users/mauricewen/Projects/08-quantum-trading
 <!-- AI-TOOLS-MANAGED:PROJECT_DIR END -->
 
 ## 系统边界
 - 研究与生产分离：研究/回测/模拟/实盘四个环境
 - 策略研发、执行、风控与监控解耦
 - 外部依赖：数据源、交易通道、风控与合规要求
+- 账户模式强隔离：模拟账户与真实账户执行链路分离、权限与审计隔离
 
 ## 架构总览
 ```mermaid
@@ -22,6 +23,7 @@ flowchart TB
     REST[REST API]
     WSS[WebSocket Server]
     Auth[Auth Service]
+    Account[Account Service]
   end
 
   subgraph Data
@@ -51,6 +53,7 @@ flowchart TB
   subgraph Execution
     Risk[Risk Engine]
     OMS[Order Manager]
+    EnvGate[Environment Gate]
     Router[Execution Router]
     Venue[Venue Adapters]
   end
@@ -66,16 +69,19 @@ flowchart TB
     Audit[Audit Log]
     Config[Config/Secret]
     Governance[Approval & Versioning]
+    Vault[Credential Vault]
   end
 
   UI --> REST
   Charts --> REST
   WS --> WSS
   REST --> Auth
+  REST --> Account
   WSS --> Auth
 
   REST --> Strategy
   REST --> Execution
+  Account --> EnvGate
   REST --> Research
   WSS --> Signal
   WSS --> OMS
@@ -88,19 +94,21 @@ flowchart TB
   Feature --> Lab --> Orchestrator --> Train --> Registry
   Registry --> Eval --> Catalog
 
-  Catalog --> Composer --> Signal --> Portfolio --> Risk --> OMS --> Router --> Venue
+  Catalog --> Composer --> Signal --> Portfolio --> Risk --> OMS --> EnvGate --> Router --> Venue
 
   Signal --> SignalBus --> Copy --> Alloc --> OMS
 
   OMS --> Audit
   Risk --> Audit
   Monitor --> Audit
+  Account --> Audit
   Router --> Monitor
   Config --> Research
   Config --> Strategy
   Config --> Execution
   Governance --> Catalog
   Governance --> Registry
+  Vault --> Account
 ```
 
 ## Frontend 层（新增）
@@ -159,6 +167,11 @@ flowchart TB
 | `/compare` | Strategy comparison | REST |
 | `/marketplace` | Strategy marketplace | REST |
 
+#### Accounts
+| 路由 | 功能 | 数据源 |
+|------|------|--------|
+| `/accounts` | Account management (sim/real, activation) | REST |
+
 #### Analysis & Reports
 | 路由 | 功能 | 数据源 |
 |------|------|--------|
@@ -202,6 +215,11 @@ flowchart TB
 - CLS < 0.1
 - FID < 100ms
 - Zero console errors
+
+### UI/UX 优化 SOP（2026-01-28）
+- 目标页面：`/accounts`
+- 一致性约束：页面节奏统一为 `space-y-6`，避免局部页面偏离基线
+- 层级约束：单页仅保留一个主按钮，次级动作使用 outline 变体
 
 ## 关键模块说明
 - 数据层：统一数据接入、质量校验、版本化与特征服务

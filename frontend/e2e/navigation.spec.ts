@@ -46,6 +46,8 @@ test.describe("Navigation", () => {
   test("should navigate to Risk page", async ({ page }) => {
     await page.goto("/");
 
+    // Expand Portfolio group first (Risk is nested inside)
+    await page.getByRole("button", { name: /投资组合/i }).click();
     await page.getByRole("link", { name: /risk/i }).first().click();
 
     await expect(page).toHaveURL("/risk");
@@ -55,6 +57,8 @@ test.describe("Navigation", () => {
   test("should navigate to Backtest page", async ({ page }) => {
     await page.goto("/");
 
+    // Expand Analysis group first (Backtest is nested inside)
+    await page.getByRole("button", { name: /分析/i }).click();
     await page.getByRole("link", { name: /backtest/i }).first().click();
 
     await expect(page).toHaveURL("/backtest");
@@ -65,6 +69,8 @@ test.describe("Navigation", () => {
   test("should navigate to Copy Trading page", async ({ page }) => {
     await page.goto("/");
 
+    // Expand Community group first (Copy Trading is nested inside)
+    await page.getByRole("button", { name: /社区/i }).click();
     await page.getByRole("link", { name: /copy/i }).first().click();
 
     await expect(page).toHaveURL("/copy");

@@ -8,6 +8,23 @@ import {
   selectOpenOrders,
   selectOrderBook,
 } from "./trading-store";
+import { apiClient } from "@/lib/api/client";
+
+vi.mock("@/lib/api/client", () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+const apiMock = apiClient as unknown as {
+  get: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+  put: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+};
 
 /**
  * Trading Store Tests
@@ -22,6 +39,10 @@ describe("useTradingStore", () => {
     act(() => {
       useTradingStore.getState().reset();
     });
+    apiMock.get.mockReset();
+    apiMock.post.mockReset();
+    apiMock.put.mockReset();
+    apiMock.delete.mockReset();
   });
 
   describe("Initial State", () => {
@@ -33,11 +54,9 @@ describe("useTradingStore", () => {
       expect(useTradingStore.getState().marketPrice).toBe(43250.0);
     });
 
-    it("should have mock positions", () => {
+    it("should start with no positions", () => {
       const positions = useTradingStore.getState().positions;
-      expect(positions.length).toBeGreaterThan(0);
-      expect(positions[0]).toHaveProperty("symbol");
-      expect(positions[0]).toHaveProperty("side");
+      expect(positions.length).toBe(0);
     });
 
     it("should have order book data", () => {
@@ -46,8 +65,8 @@ describe("useTradingStore", () => {
       expect(asks.length).toBeGreaterThan(0);
     });
 
-    it("should have available balance", () => {
-      expect(useTradingStore.getState().availableBalance).toBe(50000.0);
+    it("should have available balance defaulted to 0", () => {
+      expect(useTradingStore.getState().availableBalance).toBe(0);
     });
   });
 
@@ -87,9 +106,22 @@ describe("useTradingStore", () => {
 
   describe("Order Actions", () => {
     it("should submit a market order", async () => {
-      // Mock faster timeout for tests
-      vi.useFakeTimers();
+      const apiOrder = {
+        orderId: "order-1",
+        clientOrderId: "client-1",
+        symbol: "BTC/USDT",
+        side: "buy" as const,
+        type: "market" as const,
+        status: "submitted" as const,
+        quantity: 0.5,
+        filledQty: 0,
+        avgPrice: 0,
+        commission: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
 
+      apiMock.post.mockResolvedValueOnce(apiOrder);
       const orderPromise = useTradingStore.getState().submitOrder({
         symbol: "BTC/USDT",
         side: "buy",
@@ -100,26 +132,36 @@ describe("useTradingStore", () => {
 
       expect(useTradingStore.getState().isSubmittingOrder).toBe(true);
 
-      // Fast-forward timers
       await act(async () => {
-        vi.advanceTimersByTime(1500);
         await orderPromise;
       });
 
       expect(useTradingStore.getState().isSubmittingOrder).toBe(false);
 
       const orders = useTradingStore.getState().orders;
-      const newOrder = orders.find((o) => o.quantity === 0.5 && o.type === "market");
+      const newOrder = orders.find((o) => o.orderId === "order-1");
       expect(newOrder).toBeDefined();
-      expect(newOrder?.status).toBe("filled");
-      expect(newOrder?.filledQuantity).toBe(0.5);
-
-      vi.useRealTimers();
+      expect(newOrder?.status).toBe("submitted");
     });
 
     it("should submit a limit order", async () => {
-      vi.useFakeTimers();
+      const apiOrder = {
+        orderId: "order-2",
+        clientOrderId: "client-2",
+        symbol: "BTC/USDT",
+        side: "sell" as const,
+        type: "limit" as const,
+        status: "submitted" as const,
+        quantity: 1.0,
+        price: 44000.0,
+        filledQty: 0,
+        avgPrice: 0,
+        commission: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
 
+      apiMock.post.mockResolvedValueOnce(apiOrder);
       const orderPromise = useTradingStore.getState().submitOrder({
         symbol: "BTC/USDT",
         side: "sell",
@@ -130,53 +172,67 @@ describe("useTradingStore", () => {
       });
 
       await act(async () => {
-        vi.advanceTimersByTime(1500);
         await orderPromise;
       });
 
       const orders = useTradingStore.getState().orders;
-      const newOrder = orders.find((o) => o.price === 44000.0);
+      const newOrder = orders.find((o) => o.orderId === "order-2");
       expect(newOrder).toBeDefined();
-      expect(newOrder?.status).toBe("open");
-      expect(newOrder?.filledQuantity).toBe(0);
-
-      vi.useRealTimers();
+      expect(newOrder?.status).toBe("submitted");
+      expect(newOrder?.filledQty).toBe(0);
     });
 
     it("should cancel an order", async () => {
-      vi.useFakeTimers();
+      const existingOrder = {
+        orderId: "order-cancel",
+        clientOrderId: "client-cancel",
+        symbol: "BTC/USDT",
+        side: "buy" as const,
+        type: "limit" as const,
+        status: "submitted" as const,
+        quantity: 1,
+        price: 43000,
+        filledQty: 0,
+        avgPrice: 0,
+        commission: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
 
-      const orderId = useTradingStore.getState().orders[0].id;
+      act(() => {
+        useTradingStore.getState().setOrders([existingOrder]);
+      });
 
-      const cancelPromise = useTradingStore.getState().cancelOrder(orderId);
+      apiMock.post.mockResolvedValueOnce({ success: true });
+      const cancelPromise = useTradingStore.getState().cancelOrder(existingOrder.orderId);
 
       await act(async () => {
-        vi.advanceTimersByTime(600);
         await cancelPromise;
       });
 
       const cancelledOrder = useTradingStore
         .getState()
-        .orders.find((o) => o.id === orderId);
+        .orders.find((o) => o.orderId === existingOrder.orderId);
       expect(cancelledOrder?.status).toBe("cancelled");
-
-      vi.useRealTimers();
     });
 
     it("should set orders directly", () => {
       const newOrders = [
         {
-          id: "test-order",
+          orderId: "test-order",
+          clientOrderId: "client-test",
           symbol: "SOL/USDT",
           side: "buy" as const,
           type: "limit" as const,
           quantity: 10,
           price: 100,
           timeInForce: "GTC" as const,
-          status: "open" as const,
-          filledQuantity: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          status: "submitted" as const,
+          filledQty: 0,
+          avgPrice: 0,
+          commission: 0,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         },
       ];
 
@@ -210,25 +266,47 @@ describe("useTradingStore", () => {
     });
 
     it("should close a position", async () => {
-      vi.useFakeTimers();
+      const positionId = "pos-test";
+      act(() => {
+        useTradingStore.getState().setPositions([
+          {
+            id: positionId,
+            symbol: "SOL/USDT",
+            side: "long" as const,
+            quantity: 50,
+            entryPrice: 95.0,
+            currentPrice: 100.0,
+            openedAt: new Date(),
+          },
+        ]);
+      });
 
-      const positionId = useTradingStore.getState().positions[0].id;
-
+      apiMock.post.mockResolvedValueOnce({ success: true });
       const closePromise = useTradingStore.getState().closePosition(positionId);
 
       await act(async () => {
-        vi.advanceTimersByTime(600);
         await closePromise;
       });
 
       const positions = useTradingStore.getState().positions;
       expect(positions.find((p) => p.id === positionId)).toBeUndefined();
-
-      vi.useRealTimers();
     });
 
     it("should update a position", () => {
-      const positionId = useTradingStore.getState().positions[0].id;
+      const positionId = "pos-test";
+      act(() => {
+        useTradingStore.getState().setPositions([
+          {
+            id: positionId,
+            symbol: "SOL/USDT",
+            side: "long" as const,
+            quantity: 50,
+            entryPrice: 95.0,
+            currentPrice: 100.0,
+            openedAt: new Date(),
+          },
+        ]);
+      });
 
       act(() => {
         useTradingStore.getState().updatePosition(positionId, {
@@ -336,7 +414,7 @@ describe("useTradingStore", () => {
 
       expect(useTradingStore.getState().currentSymbol).toBe("BTC/USDT");
       expect(useTradingStore.getState().marketPrice).toBe(43250.0);
-      expect(useTradingStore.getState().availableBalance).toBe(50000.0);
+      expect(useTradingStore.getState().availableBalance).toBe(0);
     });
   });
 
@@ -356,9 +434,11 @@ describe("useTradingStore", () => {
 
     it("selectOpenOrders filters for open/pending orders", () => {
       const openOrders = selectOpenOrders(useTradingStore.getState());
-      expect(openOrders.every((o) => o.status === "open" || o.status === "pending")).toBe(
-        true
-      );
+      expect(
+        openOrders.every((o) =>
+          ["pending", "submitted", "partial"].includes(o.status)
+        )
+      ).toBe(true);
     });
 
     it("selectOrderBook returns bids and asks", () => {

@@ -6,6 +6,14 @@ import type {
   Trade,
   OrderFormData,
 } from "@/components/trading";
+import { apiClient } from "@/lib/api/client";
+import type {
+  AccountState,
+  Order as ApiOrder,
+  OrderRequest,
+  Position as ApiPosition,
+  Trade as ApiTrade,
+} from "@/lib/api/types";
 
 /**
  * Trading Store
@@ -16,20 +24,14 @@ import type {
 
 export type OrderStatus =
   | "pending"
-  | "open"
+  | "submitted"
+  | "partial"
   | "filled"
-  | "partially_filled"
   | "cancelled"
-  | "rejected";
+  | "rejected"
+  | "expired";
 
-export interface Order extends OrderFormData {
-  id: string;
-  status: OrderStatus;
-  filledQuantity: number;
-  averagePrice?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export interface Order extends ApiOrder {}
 
 interface TradingState {
   // Current trading symbol
@@ -41,6 +43,7 @@ interface TradingState {
   orders: Order[];
   isSubmittingOrder: boolean;
   orderError: string | null;
+  isLoadingOrders: boolean;
 
   // Positions
   positions: Position[];
@@ -54,6 +57,7 @@ interface TradingState {
   // Trade History
   trades: Trade[];
   recentTrades: Trade[];
+  isLoadingTrades: boolean;
 
   // Available balance
   availableBalance: number;
@@ -66,11 +70,13 @@ interface TradingState {
   submitOrder: (order: OrderFormData) => Promise<Order | null>;
   cancelOrder: (orderId: string) => Promise<boolean>;
   setOrders: (orders: Order[]) => void;
+  refreshOrders: () => Promise<void>;
 
   // Position Actions
   setPositions: (positions: Position[]) => void;
   closePosition: (positionId: string) => Promise<boolean>;
   updatePosition: (positionId: string, updates: Partial<Position>) => void;
+  refreshPositions: () => Promise<void>;
 
   // Order Book Actions
   updateOrderBook: (bids: OrderBookLevel[], asks: OrderBookLevel[]) => void;
@@ -79,71 +85,15 @@ interface TradingState {
   // Trade Actions
   setTrades: (trades: Trade[]) => void;
   addTrade: (trade: Trade) => void;
+  refreshTrades: () => Promise<void>;
 
   // Balance Actions
   setAvailableBalance: (balance: number) => void;
+  refreshAccountBalance: () => Promise<void>;
 
   // Reset
   reset: () => void;
 }
-
-// Mock data for initial state
-const mockPositions: Position[] = [
-  {
-    id: "pos-1",
-    symbol: "BTC/USDT",
-    side: "long",
-    quantity: 0.5,
-    entryPrice: 42150.0,
-    currentPrice: 43250.0,
-    stopLoss: 40000.0,
-    takeProfit: 48000.0,
-    openedAt: new Date(Date.now() - 3600000 * 24),
-    leverage: 5,
-  },
-  {
-    id: "pos-2",
-    symbol: "ETH/USDT",
-    side: "short",
-    quantity: 2.5,
-    entryPrice: 2450.0,
-    currentPrice: 2380.0,
-    stopLoss: 2600.0,
-    takeProfit: 2200.0,
-    openedAt: new Date(Date.now() - 3600000 * 12),
-    leverage: 3,
-  },
-];
-
-const mockOrders: Order[] = [
-  {
-    id: "ord-1",
-    symbol: "BTC/USDT",
-    side: "buy",
-    type: "limit",
-    quantity: 0.25,
-    price: 41500.0,
-    timeInForce: "GTC",
-    status: "open",
-    filledQuantity: 0,
-    createdAt: new Date(Date.now() - 3600000),
-    updatedAt: new Date(Date.now() - 3600000),
-  },
-  {
-    id: "ord-2",
-    symbol: "ETH/USDT",
-    side: "sell",
-    type: "stop_limit",
-    quantity: 1.0,
-    price: 2300.0,
-    stopPrice: 2320.0,
-    timeInForce: "GTC",
-    status: "pending",
-    filledQuantity: 0,
-    createdAt: new Date(Date.now() - 1800000),
-    updatedAt: new Date(Date.now() - 1800000),
-  },
-];
 
 // Base prices for different symbols
 const SYMBOL_BASE_PRICES: Record<string, number> = {
@@ -209,46 +159,55 @@ const generateMockOrderBook = (symbol: string = "BTC/USDT"): {
 
 const mockOrderBook = generateMockOrderBook("BTC/USDT");
 
-const generateMockTrades = (symbol: string = "BTC/USDT"): Trade[] => {
-  const basePrice = SYMBOL_BASE_PRICES[symbol] || 43250;
-  const priceVariance = basePrice * 0.002; // 0.2% variance
-
-  return Array.from({ length: 20 }, (_, i) => {
-    const side: "buy" | "sell" = Math.random() > 0.5 ? "buy" : "sell";
-    const price = basePrice + (Math.random() - 0.5) * priceVariance;
-    const quantity = Math.random() * 2 + 0.01;
-    return {
-      id: `trade-${symbol}-${i + 1}`,
-      symbol,
-      side,
-      price: parseFloat(price.toFixed(4)),
-      quantity: parseFloat(quantity.toFixed(6)),
-      total: parseFloat((price * quantity).toFixed(2)),
-      fee: Math.random() * 0.5,
-      feeCurrency: symbol.includes("/") ? symbol.split("/")[1] : "USD",
-      timestamp: new Date(Date.now() - i * 60000),
-    };
-  });
-};
-
-const mockTrades = generateMockTrades("BTC/USDT");
-
-const initialState = {
+const initialState: TradingState = {
   currentSymbol: "BTC/USDT",
   marketPrice: 43250.0,
   priceChange24h: 2.45,
-  orders: mockOrders,
+  orders: [],
   isSubmittingOrder: false,
   orderError: null,
-  positions: mockPositions,
+  isLoadingOrders: false,
+  positions: [],
   isLoadingPositions: false,
   bids: mockOrderBook.bids,
   asks: mockOrderBook.asks,
   isOrderBookConnected: true,
-  trades: mockTrades,
-  recentTrades: mockTrades.slice(0, 10),
-  availableBalance: 50000.0,
+  trades: [],
+  recentTrades: [],
+  isLoadingTrades: false,
+  availableBalance: 0,
 };
+
+function mapApiPosition(position: ApiPosition): Position {
+  return {
+    id: `${position.symbol}-${position.side}`,
+    symbol: position.symbol,
+    side: position.side,
+    quantity: position.quantity,
+    entryPrice: position.entryPrice,
+    currentPrice: position.currentPrice ?? position.markPrice,
+    stopLoss: position.stopLoss,
+    takeProfit: position.takeProfit,
+    openedAt: new Date(),
+    leverage: position.leverage,
+  };
+}
+
+function mapApiTrade(trade: ApiTrade): Trade {
+  return {
+    id: trade.tradeId,
+    symbol: trade.symbol,
+    side: trade.side,
+    price: trade.price,
+    quantity: trade.quantity,
+    total: trade.price * trade.quantity,
+    timestamp: new Date(trade.timestamp),
+  };
+}
+
+function mapApiOrder(order: ApiOrder): Order {
+  return order;
+}
 
 export const useTradingStore = create<TradingState>()(
   subscribeWithSelector((set, get) => ({
@@ -257,7 +216,6 @@ export const useTradingStore = create<TradingState>()(
     setCurrentSymbol: (symbol) => {
       // Regenerate mock data for the new symbol
       const newOrderBook = generateMockOrderBook(symbol);
-      const newTrades = generateMockTrades(symbol);
       const newMarketPrice = SYMBOL_BASE_PRICES[symbol] || 43250;
 
       set({
@@ -265,8 +223,6 @@ export const useTradingStore = create<TradingState>()(
         marketPrice: newMarketPrice,
         bids: newOrderBook.bids,
         asks: newOrderBook.asks,
-        trades: newTrades,
-        recentTrades: newTrades.slice(0, 10),
       });
     },
 
@@ -280,18 +236,17 @@ export const useTradingStore = create<TradingState>()(
       set({ isSubmittingOrder: true, orderError: null });
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const newOrder: Order = {
-          ...orderData,
-          id: `ord-${Date.now()}`,
-          status: orderData.type === "market" ? "filled" : "open",
-          filledQuantity: orderData.type === "market" ? orderData.quantity : 0,
-          averagePrice: orderData.type === "market" ? get().marketPrice ?? undefined : undefined,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+        const request: OrderRequest = {
+          symbol: orderData.symbol,
+          side: orderData.side,
+          type: orderData.type,
+          quantity: orderData.quantity,
+          price: orderData.price,
+          stopPrice: orderData.stopPrice,
+          timeInForce: orderData.timeInForce,
         };
+        const response = await apiClient.post<ApiOrder>("/api/orders", request);
+        const newOrder = mapApiOrder(response);
 
         set((state) => ({
           orders: [newOrder, ...state.orders],
@@ -310,11 +265,10 @@ export const useTradingStore = create<TradingState>()(
 
     cancelOrder: async (orderId) => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
+        await apiClient.post(`/api/orders/${orderId}/cancel`, {});
         set((state) => ({
           orders: state.orders.map((o) =>
-            o.id === orderId ? { ...o, status: "cancelled" as OrderStatus } : o
+            o.orderId === orderId ? { ...o, status: "cancelled" as OrderStatus } : o
           ),
         }));
 
@@ -326,14 +280,35 @@ export const useTradingStore = create<TradingState>()(
 
     setOrders: (orders) => set({ orders }),
 
+    refreshOrders: async () => {
+      set({ isLoadingOrders: true });
+      try {
+        const orders = await apiClient.get<ApiOrder[]>("/api/orders");
+        set({ orders: orders.map(mapApiOrder), isLoadingOrders: false });
+      } catch {
+        set({ isLoadingOrders: false });
+      }
+    },
+
     setPositions: (positions) => set({ positions }),
 
-    closePosition: async (positionId) => {
+    refreshPositions: async () => {
+      set({ isLoadingPositions: true });
       try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        const positions = await apiClient.get<ApiPosition[]>("/api/portfolio/positions");
+        set({ positions: positions.map(mapApiPosition), isLoadingPositions: false });
+      } catch {
+        set({ isLoadingPositions: false });
+      }
+    },
 
+    closePosition: async (positionId) => {
+      const position = get().positions.find((p) => p.id === positionId);
+      const symbol = position?.symbol ?? positionId;
+      try {
+        await apiClient.post("/api/portfolio/positions/close", { symbol });
         set((state) => ({
-          positions: state.positions.filter((p) => p.id !== positionId),
+          positions: state.positions.filter((p) => p.id !== positionId && p.symbol !== symbol),
         }));
 
         return true;
@@ -366,7 +341,27 @@ export const useTradingStore = create<TradingState>()(
         };
       }),
 
+    refreshTrades: async () => {
+      set({ isLoadingTrades: true });
+      try {
+        const trades = await apiClient.get<ApiTrade[]>("/api/trades?limit=50");
+        const mapped = trades.map(mapApiTrade);
+        set({ trades: mapped, recentTrades: mapped.slice(0, 10), isLoadingTrades: false });
+      } catch {
+        set({ isLoadingTrades: false });
+      }
+    },
+
     setAvailableBalance: (balance) => set({ availableBalance: balance }),
+
+    refreshAccountBalance: async () => {
+      try {
+        const account = await apiClient.get<AccountState>("/api/portfolio/account");
+        set({ availableBalance: account.cash });
+      } catch {
+        // leave balance unchanged on error
+      }
+    },
 
     reset: () => set(initialState),
   }))
@@ -377,7 +372,9 @@ export const selectCurrentSymbol = (state: TradingState) => state.currentSymbol;
 export const selectMarketPrice = (state: TradingState) => state.marketPrice;
 export const selectPositions = (state: TradingState) => state.positions;
 export const selectOpenOrders = (state: TradingState) =>
-  state.orders.filter((o) => o.status === "open" || o.status === "pending");
+  state.orders.filter((o) =>
+    ["pending", "submitted", "partial"].includes(o.status)
+  );
 export const selectOrderBook = (state: TradingState) => ({
   bids: state.bids,
   asks: state.asks,

@@ -149,7 +149,7 @@ export function useKlines(
     staleTime: 60000, // 1 minute
     refetchInterval: 60000, // Refresh every minute
     retry: 1, // Reduce retry spam
-    placeholderData: () => generateMockKlines(symbol, limit, interval), // Show mock chart data
+    placeholderData: [],
   });
 }
 
@@ -183,6 +183,6 @@ export function useRecentTrades(symbol: string, limit: number = 50) {
     staleTime: 5000,
     refetchInterval: 5000,
     retry: 1,
-    placeholderData: () => generateMockTrades(symbol, Math.min(limit, 10)), // Show mock trades
+    placeholderData: [],
   });
 }

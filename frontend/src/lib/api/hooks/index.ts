@@ -13,6 +13,15 @@ export {
   portfolioKeys,
 } from './use-portfolio';
 
+// Account hooks
+export {
+  useAccounts,
+  useCreateSimulatedAccount,
+  useCreateRealAccount,
+  useActivateAccount,
+  accountKeys,
+} from './use-accounts';
+
 // Strategy hooks
 export {
   useStrategies,

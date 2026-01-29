@@ -18,7 +18,8 @@ type AuditAction =
   | 'risk_check'
   | 'risk_breach'
   | 'strategy_signal'
-  | 'system_event';
+  | 'system_event'
+  | 'account_event';
 
 /** Audit entry */
 interface AuditEntry {
@@ -219,6 +220,17 @@ export class AuditLogger {
    */
   logSystemEvent(event: string, details: Record<string, unknown> = {}): AuditEntry {
     return this.log('system_event', 'system', event, details);
+  }
+
+  /**
+   * Log account event
+   */
+  logAccountEvent(
+    event: string,
+    accountId: string,
+    details: Record<string, unknown> = {}
+  ): AuditEntry {
+    return this.log('account_event', event, accountId, details);
   }
 
   /**

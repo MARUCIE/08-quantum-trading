@@ -3,7 +3,7 @@ Title: Task Plan - initiative_quantum_x
 Scope: project
 Owner: ai-agent
 Status: active
-LastUpdated: 2026-01-25
+LastUpdated: 2026-01-28
 Related:
   - /doc/00_project/initiative_quantum_x/PRD.md
   - /doc/00_project/initiative_quantum_x/SYSTEM_ARCHITECTURE.md
@@ -15,10 +15,11 @@ Related:
 
 # Objective
 - AI-native quantitative trading system (stocks, futures, crypto) with SOTA strategy system and copy-trading roadmap
+- Add account modes (simulated vs real) with safe separation and customer-owned account linking
 
 # Non-goals
 - Investment advice or guaranteed performance
-- Unlicensed live trading connectivity
+- Unauthorized live trading connectivity or custody
 
 # Work Breakdown (WBS)
 | ID | Task | Owner | Dependencies | Risk | Done Definition | Status |
@@ -127,6 +128,17 @@ Related:
 | T102 | Leaderboard | ai-agent | T44 | medium | trader rankings and social features | Done |
 | T103 | Strategy marketplace | ai-agent | T102 | high | share/subscribe to strategies | Done |
 | T104 | Mobile dashboard | ai-agent | T37 | medium | mobile-optimized trading view | Done |
+| T105 | Account modes requirements + PDCA doc alignment | ai-agent | none | high | PRD/Arch/UX/Opt plan updated and consistent | Done |
+| T106 | Account model + environment separation | ai-agent | T105 | high | backend account entities and mode guards | Done |
+| T107 | Account API (link/switch/status) | ai-agent | T106 | high | REST endpoints and error codes documented | Done |
+| T108 | Execution gating for sim/real | ai-agent | T106 | high | strategy execution cannot cross environments | Done |
+| T109 | Frontend account switcher + onboarding | ai-agent | T107 | high | UI for sim/real account selection and status | Done |
+| T110 | Risk/audit for real accounts | ai-agent | T108 | high | audit logs + risk checks for real trading | Done |
+| T111 | E2E tests for account flows | ai-agent | T109 | medium | Playwright flows cover sim/real switch | Done |
+| T112 | Delivery SOP + verification | ai-agent | T111 | medium | ai check + UX map simulation evidence | Done |
+| T113 | Sidebar navigation optimization | ai-agent | T37 | medium | collapsible groups, reduced density, touch-friendly | Done |
+| T114 | UI/UX composition/hierarchy audit | ai-agent | T113 | medium | apply ui-skills, web-interface-guidelines | Done |
+| T115 | UI/UX SOP accounts page alignment + evidence | ai-agent | T114 | low | spacing baseline + single primary action verified | Done |
 
 # Milestones
 - M1: Docs baseline complete (PDCA + PRD + architecture + UX)
@@ -158,11 +170,13 @@ Related:
 - M27: Phase 6.2 complete (Multi-exchange connector, Exchange comparison, Smart order routing, Arbitrage scanner)
 - M28: Phase 6.3 complete (Production config, SSL/TLS, CDN, Monitoring dashboard)
 - M29: Phase 7 complete (Notification center, User preferences, Dashboard builder, Portfolio analytics, Trade statistics, Leaderboard, Strategy marketplace, Mobile dashboard)
+- M30: Account modes (sim/real) and real account linking complete
 
 # Risks & Mitigations
 - R1: Overfitting and backtest bias / mitigation: robust validation and walk-forward
 - R2: Execution mismatch / mitigation: single execution interface for backtest/live
 - R3: Compliance constraints / mitigation: environment separation and audit logs
+- R4: Real account integration risk / mitigation: explicit user consent, scoped permissions, audit + kill switch
 
 # Decisions
 - D1: Use multi-layer architecture (data, research, strategy, execution, ops)
@@ -172,6 +186,7 @@ Related:
 - D5: Use TradingView Lightweight Charts v5 for financial charting
 - D6: Use Zustand for client state, TanStack Query for server state
 - D7: Target performance: LCP <2.5s, CLS <0.1, FID <100ms
+- D8: Enforce strict separation between simulated and real account execution paths
 
 # Next Steps
 - Integration testing with real Binance testnet
@@ -179,6 +194,8 @@ Related:
 - Security audit and penetration testing
 - Implement order book WebSocket subscription (T55 enhancement)
 - Production deployment preparation
+- Define account mode flows and API contracts for sim/real separation
+- Implement real account execution adapters for Binance/OKX/Bybit
 
 ## Changelog
 - 2026-01-24: initialized. (reason: planning-with-files)
@@ -198,6 +215,7 @@ Related:
 - 2026-01-26: completed T24-T35 (Asset/Compliance scope, Data vendors, Risk config, E1-E7 implementation, API integration, E2E verification).
 - 2026-01-26: MVP implementation complete. All 35 tasks done.
 - 2026-01-26: Added UI/UX optimization tasks (T36-T42). Completed T36-T39 (theme, responsive, loading, animations).
+- 2026-01-28: Added account modes initiative (sim/real) with WBS and risk updates.
 - 2026-01-26: Completed T40 (a11y) and T41 (form validation) with useFormValidation hook.
 - 2026-01-26: Completed T42 (performance): next.config optimizations, lazy loading, Web Vitals monitoring, prefetch utilities.
 - 2026-01-26: Completed T43-T47 (production readiness): unit tests, E2E tests, README, CI/CD, Docker.
@@ -291,3 +309,5 @@ Output
 - [x] Fixed all E2E test failures (locale, selectors, form validation, accessibility)
 - [x] CardTitle semantic improvement (div→h3 for heading role)
 - [x] Auth forms: noValidate + aria-label improvements
+- 2026-01-28: Implemented account store + API + UI (accounts page + switcher), added sim/real gating and OpenAPI updates, fixed paper-service price refresh, updated trading store tests.
+- 2026-01-28: UI/UX SOP for `/accounts` (spacing aligned to `space-y-6`, single primary action), Playwright evidence run (chromium) pass.

@@ -23,8 +23,9 @@
 - task_plan.md
 - notes.md
 - deliverable.md
+- REQUIREMENT_CONFIRMATION_ZH_FR.md
 
 ## 状态
 - Stage: planning (MVP plan ready)
 - Owner: ai-agent
-- LastUpdated: 2026-01-25
+- LastUpdated: 2026-01-28

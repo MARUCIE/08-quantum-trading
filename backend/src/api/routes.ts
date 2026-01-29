@@ -7,6 +7,7 @@
 import { ApiServer } from './server.js';
 import { BinanceClient } from '../data/binance-client.js';
 import { RiskMonitor } from '../risk/monitor.js';
+import { RiskChecker } from '../risk/checker.js';
 import { AuditLogger } from '../risk/audit.js';
 import { MVP_RISK_CONFIG } from '../risk/config.js';
 import { metrics } from '../metrics/index.js';
@@ -25,7 +26,19 @@ import {
   listPaperOrders,
   listPaperTrades,
   submitPaperOrder,
+  ensurePaperAccount,
 } from '../execution/paper-service.js';
+import {
+  listAccounts,
+  getActiveAccount,
+  setActiveAccount,
+  guardAccountMode,
+  accountStore,
+} from '../accounts/index.js';
+import type {
+  AccountConnectionInput,
+  SimulatedAccountInput,
+} from '../accounts/types.js';
 
 // Initialize services
 const binanceClient = new BinanceClient({
@@ -60,6 +73,7 @@ function formatUptime(ms: number): string {
 }
 
 const riskMonitor = new RiskMonitor(MVP_RISK_CONFIG);
+const riskChecker = new RiskChecker(MVP_RISK_CONFIG);
 const auditLogger = new AuditLogger('./audit');
 
 
@@ -136,17 +150,44 @@ export function registerRoutes(server: ApiServer): void {
 
   // Portfolio endpoints
   server.get('/api/portfolio/account', async (_req, res) => {
-    const account = await getPaperAccountState();
+    const activeAccount = getActiveAccount();
+    if (!activeAccount) {
+      server.sendJson(res, 404, { error: 'No active account' });
+      return;
+    }
+    if (activeAccount.mode !== 'simulated') {
+      server.sendJson(res, 409, { error: 'Active account is not simulated' });
+      return;
+    }
+    const account = await getPaperAccountState(activeAccount.id);
     server.sendJson(res, 200, account);
   });
 
   server.get('/api/portfolio/positions', async (_req, res) => {
-    const positions = await getPaperPositions();
+    const activeAccount = getActiveAccount();
+    if (!activeAccount) {
+      server.sendJson(res, 404, { error: 'No active account' });
+      return;
+    }
+    if (activeAccount.mode !== 'simulated') {
+      server.sendJson(res, 409, { error: 'Active account is not simulated' });
+      return;
+    }
+    const positions = await getPaperPositions(activeAccount.id);
     server.sendJson(res, 200, positions);
   });
 
   server.get('/api/portfolio/stats', async (_req, res) => {
-    const account = await getPaperAccountState();
+    const activeAccount = getActiveAccount();
+    if (!activeAccount) {
+      server.sendJson(res, 404, { error: 'No active account' });
+      return;
+    }
+    if (activeAccount.mode !== 'simulated') {
+      server.sendJson(res, 409, { error: 'Active account is not simulated' });
+      return;
+    }
+    const account = await getPaperAccountState(activeAccount.id);
     const totalPnl = account.unrealizedPnl + account.realizedPnl;
     const baseEquity = account.totalEquity - totalPnl;
     const totalPnlPercent = baseEquity > 0 ? (totalPnl / baseEquity) * 100 : 0;
@@ -162,8 +203,14 @@ export function registerRoutes(server: ApiServer): void {
   });
 
   server.post('/api/portfolio/positions/close', async (req, res) => {
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
+    const activeAccount = getActiveAccount();
     const body = await server.parseBody<{ symbol: string }>(req);
-    const positions = await getPaperPositions();
+    const positions = await getPaperPositions(activeAccount!.id);
     const position = positions.find(
       (p) =>
         p.symbol === body.symbol ||
@@ -181,6 +228,8 @@ export function registerRoutes(server: ApiServer): void {
       type: 'market',
       quantity: position.quantity,
       clientOrderId: `close_${Date.now()}`,
+      accountId: activeAccount?.id,
+      accountMode: 'simulated',
     });
 
     auditLogger.logPositionClose(
@@ -197,14 +246,25 @@ export function registerRoutes(server: ApiServer): void {
 
   // Order endpoints (paper trading)
   server.get('/api/orders', (_req, res, _params, query) => {
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
+    const activeAccount = getActiveAccount();
     const symbol = query.get('symbol');
     const normalized = symbol ? symbol.replace('/', '').toUpperCase() : undefined;
-    const orders = listPaperOrders(normalized);
+    const orders = listPaperOrders(activeAccount!.id, normalized);
     server.sendJson(res, 200, orders);
   });
 
   server.post('/api/orders', async (req, res) => {
     try {
+      const guard = guardAccountMode('simulated', getActiveAccount());
+      if (!guard.allowed) {
+        server.sendJson(res, 409, { error: guard.reason });
+        return;
+      }
       const body = await server.parseBody<{
         symbol: string;
         side: 'buy' | 'sell';
@@ -217,6 +277,7 @@ export function registerRoutes(server: ApiServer): void {
         postOnly?: boolean;
         strategyId?: string;
         clientOrderId?: string;
+        skipRiskCheck?: boolean; // Allow skipping for paper trading
       }>(req);
 
       if (!body.symbol || !body.side || !body.type || !body.quantity) {
@@ -224,10 +285,64 @@ export function registerRoutes(server: ApiServer): void {
         return;
       }
 
+      const activeAccount = getActiveAccount();
+
+      // Perform risk check (can be skipped for paper trading)
+      if (!body.skipRiskCheck) {
+        const accountState = await getPaperAccountState(activeAccount?.id || '');
+        if (accountState) {
+          // Pass full account state to risk checker
+          riskChecker.updateAccountState(accountState);
+        }
+
+        const orderPrice = body.price || 0;
+        // Map stop_limit to stop for risk validation
+        const riskOrderType = body.type === 'stop_limit' ? 'stop' : body.type;
+        const riskResult = riskChecker.validateOrder({
+          symbol: body.symbol,
+          side: body.side,
+          type: riskOrderType as 'market' | 'limit' | 'stop',
+          quantity: body.quantity,
+          price: orderPrice,
+        });
+
+        // Log risk check result
+        auditLogger.logRiskCheck(
+          body.clientOrderId || `ord_${Date.now()}`,
+          riskResult.passed,
+          riskResult.checks.map(c => ({ name: c.name, passed: c.passed, value: c.value }))
+        );
+
+        // Reject if risk check fails
+        if (!riskResult.passed) {
+          auditLogger.logOrderReject(
+            body.clientOrderId || `ord_${Date.now()}`,
+            `Risk check failed: ${riskResult.blockers.join(', ')}`
+          );
+          server.sendJson(res, 400, {
+            error: 'Risk check failed',
+            blockers: riskResult.blockers,
+            warnings: riskResult.warnings,
+          });
+          return;
+        }
+      }
+
       const order = await submitPaperOrder({
         ...body,
         clientOrderId: body.clientOrderId,
+        accountId: activeAccount?.id,
+        accountMode: 'simulated',
       });
+
+      auditLogger.logOrderSubmit(
+        order.orderId,
+        order.symbol,
+        order.side,
+        order.quantity,
+        order.price,
+        body.strategyId
+      );
 
       auditLogger.logSystemEvent('order_submitted', {
         orderId: order.orderId,
@@ -235,6 +350,8 @@ export function registerRoutes(server: ApiServer): void {
         side: order.side,
         quantity: order.quantity,
         status: order.status,
+        accountId: activeAccount?.id,
+        accountMode: 'simulated',
       });
 
       server.sendJson(res, 201, order);
@@ -245,7 +362,13 @@ export function registerRoutes(server: ApiServer): void {
   });
 
   server.post('/api/orders/:id/cancel', async (_req, res, params) => {
-    const ok = await cancelPaperOrder(params.id);
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
+    const activeAccount = getActiveAccount();
+    const ok = await cancelPaperOrder(activeAccount!.id, params.id);
     if (!ok) {
       server.sendJson(res, 404, { error: 'Order not found or not cancellable' });
       return;
@@ -255,8 +378,90 @@ export function registerRoutes(server: ApiServer): void {
   });
 
   server.get('/api/trades', (_req, res, _params, query) => {
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
+    const activeAccount = getActiveAccount();
     const limit = parseInt(query.get('limit') || '100', 10);
-    server.sendJson(res, 200, listPaperTrades(limit));
+    server.sendJson(res, 200, listPaperTrades(activeAccount!.id, limit));
+  });
+
+  // Account endpoints
+  server.get('/api/accounts', (_req, res) => {
+    const accounts = listAccounts();
+    server.sendJson(res, 200, {
+      accounts,
+      activeAccountId: getActiveAccount()?.id || null,
+    });
+  });
+
+  server.get('/api/accounts/active', (_req, res) => {
+    const account = getActiveAccount();
+    if (!account) {
+      server.sendJson(res, 404, { error: 'No active account' });
+      return;
+    }
+    server.sendJson(res, 200, account);
+  });
+
+  server.post('/api/accounts/simulated', async (req, res) => {
+    const body = await server.parseBody<SimulatedAccountInput>(req);
+    if (!body?.name) {
+      server.sendJson(res, 400, { error: 'Name is required' });
+      return;
+    }
+    const account = accountStore.createSimulated({
+      name: body.name,
+      initialCapital: body.initialCapital,
+      setActive: body.setActive ?? true,
+    });
+    ensurePaperAccount(account.id, body.initialCapital);
+    auditLogger.logAccountEvent('sim_account_created', account.id, {
+      name: account.name,
+      mode: account.mode,
+    });
+    server.sendJson(res, 201, account);
+  });
+
+  server.post('/api/accounts/real', async (req, res) => {
+    try {
+      const body = await server.parseBody<AccountConnectionInput>(req);
+      if (!body?.name || !body?.provider || !body?.credentials?.apiKey || !body?.credentials?.apiSecret) {
+        server.sendJson(res, 400, { error: 'Missing required fields' });
+        return;
+      }
+      const account = accountStore.createReal({
+        name: body.name,
+        provider: body.provider,
+        credentials: body.credentials,
+        permissions: body.permissions,
+        setActive: body.setActive ?? false,
+      });
+      auditLogger.logAccountEvent('real_account_linked', account.id, {
+        name: account.name,
+        provider: account.provider,
+      });
+      server.sendJson(res, 201, account);
+    } catch (error) {
+      server.sendJson(res, 500, {
+        error: error instanceof Error ? error.message : 'Failed to link account',
+      });
+    }
+  });
+
+  server.post('/api/accounts/:id/activate', (_req, res, params) => {
+    const account = setActiveAccount(params.id);
+    if (!account) {
+      server.sendJson(res, 404, { error: 'Account not found' });
+      return;
+    }
+    auditLogger.logAccountEvent('account_activated', account.id, {
+      mode: account.mode,
+      provider: account.provider,
+    });
+    server.sendJson(res, 200, account);
   });
 
   // Strategy endpoints
@@ -397,7 +602,13 @@ export function registerRoutes(server: ApiServer): void {
 
   // Risk endpoints
   server.get('/api/risk/metrics', async (_req, res) => {
-    const account = await getPaperAccountState();
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
+    const activeAccount = getActiveAccount();
+    const account = await getPaperAccountState(activeAccount!.id);
     riskMonitor.update(account);
     const metrics = {
       currentDrawdown: account.drawdownPct * 100,
@@ -411,10 +622,16 @@ export function registerRoutes(server: ApiServer): void {
   });
 
   server.get('/api/risk/events', async (_req, res, _params, query) => {
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
     const limit = parseInt(query.get('limit') || '100', 10);
     const level = query.get('level');
 
-    const account = await getPaperAccountState();
+    const activeAccount = getActiveAccount();
+    const account = await getPaperAccountState(activeAccount!.id);
     riskMonitor.update(account);
 
     let events = riskMonitor.getRecentEvents(limit);
@@ -425,7 +642,85 @@ export function registerRoutes(server: ApiServer): void {
   });
 
   server.get('/api/risk/limits', (_req, res) => {
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
     server.sendJson(res, 200, MVP_RISK_CONFIG);
+  });
+
+  // Risk status - validate account against risk limits
+  server.get('/api/risk/status', async (_req, res) => {
+    const activeAccount = getActiveAccount();
+    if (!activeAccount) {
+      server.sendJson(res, 409, { error: 'No active account' });
+      return;
+    }
+
+    const accountState = await getPaperAccountState(activeAccount.id);
+    if (!accountState) {
+      server.sendJson(res, 404, { error: 'Account state not found' });
+      return;
+    }
+
+    // Use pre-calculated risk metrics from account state
+    const equity = accountState.equity;
+    const unrealizedPnl = accountState.unrealizedPnl;
+    const realizedPnl = accountState.realizedPnl;
+    const drawdownPct = accountState.drawdownPct;
+    const dailyLossPct = realizedPnl < 0 ? Math.abs(realizedPnl / equity) : 0;
+
+    // Check limits
+    const checks = [
+      {
+        name: 'max_drawdown',
+        passed: drawdownPct < MVP_RISK_CONFIG.account.maxDrawdownPct,
+        current: drawdownPct,
+        limit: MVP_RISK_CONFIG.account.maxDrawdownPct,
+        severity: drawdownPct >= MVP_RISK_CONFIG.account.maxDrawdownPct ? 'blocker' : 'ok',
+      },
+      {
+        name: 'daily_loss_limit',
+        passed: dailyLossPct < MVP_RISK_CONFIG.account.dailyLossLimitPct,
+        current: dailyLossPct,
+        limit: MVP_RISK_CONFIG.account.dailyLossLimitPct,
+        severity: dailyLossPct >= MVP_RISK_CONFIG.account.dailyLossLimitPct ? 'blocker' : 'ok',
+      },
+      {
+        name: 'leverage',
+        passed: true, // Paper trading doesn't track leverage explicitly
+        current: 1.0,
+        limit: MVP_RISK_CONFIG.account.maxLeverage,
+        severity: 'ok',
+      },
+    ];
+
+    const allPassed = checks.every(c => c.passed);
+    const blockers = checks.filter(c => !c.passed);
+
+    // Log risk status check
+    auditLogger.logRiskCheck(
+      `status_${activeAccount.id}`,
+      allPassed,
+      checks.map(c => ({ name: c.name, passed: c.passed, value: c.current }))
+    );
+
+    server.sendJson(res, 200, {
+      accountId: activeAccount.id,
+      accountMode: activeAccount.mode,
+      tradingAllowed: allPassed,
+      checks,
+      blockers: blockers.map(b => `${b.name}: ${(b.current * 100).toFixed(2)}% exceeds ${(b.limit * 100).toFixed(0)}% limit`),
+      metrics: {
+        equity,
+        unrealizedPnl,
+        realizedPnl,
+        drawdownPct,
+        dailyLossPct,
+      },
+      timestamp: Date.now(),
+    });
   });
 
   // Audit log endpoints

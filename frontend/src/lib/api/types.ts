@@ -29,6 +29,47 @@ export interface Ticker {
   lastSize: number;
 }
 
+// Account Types
+export type AccountMode = 'simulated' | 'real';
+export type AccountStatus = 'active' | 'inactive' | 'pending' | 'error';
+export type RealAccountProvider = 'binance' | 'okx' | 'bybit';
+
+export interface AccountRecord {
+  id: string;
+  name: string;
+  mode: AccountMode;
+  provider?: RealAccountProvider;
+  status: AccountStatus;
+  createdAt: string;
+  updatedAt: string;
+  lastConnectedAt?: string;
+  permissions?: string[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface AccountListResponse {
+  accounts: AccountRecord[];
+  activeAccountId: string | null;
+}
+
+export interface SimulatedAccountInput {
+  name: string;
+  initialCapital?: number;
+  setActive?: boolean;
+}
+
+export interface RealAccountInput {
+  name: string;
+  provider: RealAccountProvider;
+  credentials: {
+    apiKey: string;
+    apiSecret: string;
+    passphrase?: string;
+  };
+  permissions?: string[];
+  setActive?: boolean;
+}
+
 // Portfolio Types
 export interface Position {
   symbol: string;
@@ -135,19 +176,42 @@ export interface RiskLimits {
 
 // Order Types
 export interface Order {
-  id: string;
+  orderId: string;
+  clientOrderId: string;
   symbol: string;
   side: 'buy' | 'sell';
-  type: 'market' | 'limit' | 'stop';
-  status: 'pending' | 'open' | 'filled' | 'cancelled' | 'rejected';
+  type: 'market' | 'limit' | 'stop' | 'stop_limit';
+  status: 'pending' | 'submitted' | 'partial' | 'filled' | 'cancelled' | 'rejected' | 'expired';
   quantity: number;
-  filledQuantity: number;
+  filledQty: number;
+  avgPrice: number;
+  commission: number;
   price?: number;
-  avgFillPrice?: number;
   stopPrice?: number;
+  timeInForce?: 'GTC' | 'IOC' | 'FOK';
+  reduceOnly?: boolean;
+  postOnly?: boolean;
   strategyId?: string;
+  accountId?: string;
+  accountMode?: AccountMode;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface OrderRequest {
+  symbol: string;
+  side: 'buy' | 'sell';
+  type: 'market' | 'limit' | 'stop' | 'stop_limit';
+  quantity: number;
+  price?: number;
+  stopPrice?: number;
+  timeInForce?: 'GTC' | 'IOC' | 'FOK';
+  reduceOnly?: boolean;
+  postOnly?: boolean;
+  strategyId?: string;
+  clientOrderId?: string;
+  accountId?: string;
+  accountMode?: AccountMode;
 }
 
 export interface Trade {

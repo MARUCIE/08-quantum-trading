@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AssetClassSelector } from "@/components/ui/asset-class-selector";
+import { AccountSwitcher } from "@/components/accounts/account-switcher";
 import {
   Tooltip,
   TooltipContent,
@@ -62,6 +63,9 @@ export function Header() {
 
       {/* Right side */}
       <div className="flex items-center gap-1 md:gap-2" role="group" aria-label="Actions">
+        <div className="hidden md:flex">
+          <AccountSwitcher />
+        </div>
         {/* Asset Class Selector */}
         <div className="hidden sm:block">
           <AssetClassSelector />

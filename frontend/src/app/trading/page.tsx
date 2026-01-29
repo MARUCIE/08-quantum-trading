@@ -89,14 +89,20 @@ export default function TradingPage() {
 
   // Trading store
   const {
+    orders,
     positions,
     bids,
     asks,
     recentTrades,
     submitOrder,
     isSubmittingOrder,
+    cancelOrder,
     setCurrentSymbol,
     setMarketPrice,
+    refreshOrders,
+    refreshPositions,
+    refreshTrades,
+    refreshAccountBalance,
   } = useTradingStore();
 
   // WebSocket connection status
@@ -122,6 +128,13 @@ export default function TradingPage() {
   useEffect(() => {
     setCurrentSymbol(selectedSymbol);
   }, [selectedSymbol, setCurrentSymbol]);
+
+  useEffect(() => {
+    void refreshOrders();
+    void refreshPositions();
+    void refreshTrades();
+    void refreshAccountBalance();
+  }, [refreshOrders, refreshPositions, refreshTrades, refreshAccountBalance]);
 
   // Update store when price changes
   useEffect(() => {
@@ -209,6 +222,13 @@ export default function TradingPage() {
         timestamp: new Date(t.timestamp),
       }))
     : recentTrades;
+
+  const openOrders = orders
+    .filter((order) => ["pending", "submitted", "partial"].includes(order.status))
+    .slice(0, 5);
+  const orderHistory = orders
+    .filter((order) => ["filled", "cancelled", "rejected", "expired"].includes(order.status))
+    .slice(0, 5);
 
   // Connection status indicator
   const connectionStatus = {
@@ -400,12 +420,9 @@ export default function TradingPage() {
             <CardContent>
               <TabsContent value="orders" className="mt-0">
                 <div className="space-y-2">
-                  {useTradingStore.getState().orders
-                    .filter((o) => o.status === "open" || o.status === "pending")
-                    .slice(0, 5)
-                    .map((order) => (
+                  {openOrders.map((order) => (
                       <div
-                        key={order.id}
+                        key={order.orderId}
                         className="flex items-center justify-between rounded-lg border p-2 text-sm"
                       >
                         <div className="flex items-center gap-2">
@@ -420,20 +437,23 @@ export default function TradingPage() {
                             {order.side.toUpperCase()}
                           </Badge>
                           <span className="font-mono text-xs">
-                            {order.quantity} @ {formatPrice(order.price || 0)}
+                            {order.quantity} @{" "}
+                            {order.type === "market"
+                              ? tTrading("market")
+                              : formatPrice(order.price || order.avgPrice || 0)}
                           </span>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-6 text-xs text-destructive"
-                          onClick={() => useTradingStore.getState().cancelOrder(order.id)}
+                          onClick={() => cancelOrder(order.orderId)}
                         >
                           {tTrading("cancelOrder")}
                         </Button>
                       </div>
                     ))}
-                  {useTradingStore.getState().orders.filter((o) => o.status === "open" || o.status === "pending").length === 0 && (
+                  {openOrders.length === 0 && (
                     <p className="text-center text-sm text-muted-foreground py-4">
                       {t("noOpenOrders")}
                     </p>
@@ -442,12 +462,9 @@ export default function TradingPage() {
               </TabsContent>
               <TabsContent value="history" className="mt-0">
                 <div className="space-y-2">
-                  {useTradingStore.getState().orders
-                    .filter((o) => o.status === "filled" || o.status === "cancelled")
-                    .slice(0, 5)
-                    .map((order) => (
+                  {orderHistory.map((order) => (
                       <div
-                        key={order.id}
+                        key={order.orderId}
                         className="flex items-center justify-between rounded-lg border p-2 text-sm opacity-60"
                       >
                         <div className="flex items-center gap-2">
@@ -455,7 +472,10 @@ export default function TradingPage() {
                             {order.status.toUpperCase()}
                           </Badge>
                           <span className="font-mono text-xs">
-                            {order.quantity} @ {formatPrice(order.price || order.averagePrice || 0)}
+                            {order.quantity} @{" "}
+                            {order.type === "market"
+                              ? formatPrice(order.avgPrice || 0)
+                              : formatPrice(order.price || order.avgPrice || 0)}
                           </span>
                         </div>
                         <span className="text-xs text-muted-foreground">
@@ -463,7 +483,7 @@ export default function TradingPage() {
                         </span>
                       </div>
                     ))}
-                  {useTradingStore.getState().orders.filter((o) => o.status === "filled" || o.status === "cancelled").length === 0 && (
+                  {orderHistory.length === 0 && (
                     <p className="text-center text-sm text-muted-foreground py-4">
                       {t("noOrderHistory")}
                     </p>

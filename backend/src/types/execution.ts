@@ -18,6 +18,8 @@ export interface OrderRequest {
   postOnly?: boolean;
   strategyId?: string;
   metadata?: Record<string, unknown>;
+  accountId?: string;
+  accountMode?: 'simulated' | 'real';
 }
 
 /** Order status */

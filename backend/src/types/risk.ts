@@ -118,6 +118,8 @@ export interface OrderRequest {
   price?: number;
   stopPrice?: number;
   strategyId?: string;
+  accountId?: string;
+  accountMode?: 'simulated' | 'real';
 }
 
 /** Risk event for audit logging */

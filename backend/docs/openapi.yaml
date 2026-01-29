@@ -35,6 +35,8 @@ tags:
     description: System health endpoints
   - name: Portfolio
     description: Portfolio and position management
+  - name: Accounts
+    description: Account mode management and linking
   - name: Strategies
     description: Strategy monitoring and control
   - name: Market
@@ -70,6 +72,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountState'
+        '404':
+          description: No active account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/portfolio/positions:
     get:
@@ -86,6 +100,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Position'
+        '404':
+          description: No active account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/portfolio/stats:
     get:
@@ -100,6 +126,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PortfolioStats'
+        '404':
+          description: No active account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/portfolio/positions/close:
     post:
@@ -130,6 +168,231 @@ paths:
                     type: boolean
                   symbol:
                     type: string
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/orders:
+    get:
+      tags: [Portfolio]
+      summary: List orders
+      description: Returns open and historical orders for the active simulated account
+      operationId: listOrders
+      parameters:
+        - name: symbol
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [Portfolio]
+      summary: Submit order
+      description: Submit an order for the active simulated account
+      operationId: submitOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/orders/{id}/cancel:
+    post:
+      tags: [Portfolio]
+      summary: Cancel order
+      description: Cancel an order in the active simulated account
+      operationId: cancelOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cancel successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/trades:
+    get:
+      tags: [Portfolio]
+      summary: List trades
+      description: Returns trades for the active simulated account
+      operationId: listTrades
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Trade list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trade'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/accounts:
+    get:
+      tags: [Accounts]
+      summary: List accounts
+      description: Returns all accounts and active account id
+      operationId: listAccounts
+      responses:
+        '200':
+          description: Accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accounts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountRecord'
+                  activeAccountId:
+                    type: string
+                    nullable: true
+
+  /api/accounts/active:
+    get:
+      tags: [Accounts]
+      summary: Get active account
+      operationId: getActiveAccount
+      responses:
+        '200':
+          description: Active account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRecord'
+        '404':
+          description: No active account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/accounts/simulated:
+    post:
+      tags: [Accounts]
+      summary: Create simulated account
+      operationId: createSimulatedAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulatedAccountInput'
+      responses:
+        '201':
+          description: Created simulated account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRecord'
+
+  /api/accounts/real:
+    post:
+      tags: [Accounts]
+      summary: Link real account
+      operationId: linkRealAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RealAccountInput'
+      responses:
+        '201':
+          description: Linked real account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRecord'
+
+  /api/accounts/{id}/activate:
+    post:
+      tags: [Accounts]
+      summary: Activate account
+      operationId: activateAccount
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Activated account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRecord'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/strategies:
     get:
@@ -349,6 +612,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RiskMetrics'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/risk/events:
     get:
@@ -376,6 +645,32 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RiskEvent'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/risk/limits:
+    get:
+      tags: [Risk]
+      summary: Get risk limits
+      description: Returns configured risk limits for active account
+      operationId: getRiskLimits
+      responses:
+        '200':
+          description: Risk limits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskLimits'
+        '409':
+          description: Account mode mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
@@ -478,6 +773,116 @@ components:
           type: number
         cashBalance:
           type: number
+
+    AccountRecord:
+      type: object
+      required: [id, name, mode, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        mode:
+          type: string
+          enum: [simulated, real]
+        provider:
+          type: string
+          enum: [binance, okx, bybit]
+        status:
+          type: string
+          enum: [active, inactive, pending, error]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        lastConnectedAt:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    SimulatedAccountInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        initialCapital:
+          type: number
+        setActive:
+          type: boolean
+
+    RealAccountInput:
+      type: object
+      required: [name, provider, credentials]
+      properties:
+        name:
+          type: string
+        provider:
+          type: string
+          enum: [binance, okx, bybit]
+        credentials:
+          type: object
+          required: [apiKey, apiSecret]
+          properties:
+            apiKey:
+              type: string
+            apiSecret:
+              type: string
+            passphrase:
+              type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        setActive:
+          type: boolean
+
+    OrderRequest:
+      type: object
+      required: [symbol, side, type, quantity]
+      properties:
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [buy, sell]
+        type:
+          type: string
+          enum: [market, limit, stop, stop_limit]
+        quantity:
+          type: number
+        price:
+          type: number
+        stopPrice:
+          type: number
+        timeInForce:
+          type: string
+          enum: [GTC, IOC, FOK]
+        reduceOnly:
+          type: boolean
+        postOnly:
+          type: boolean
+        strategyId:
+          type: string
+        clientOrderId:
+          type: string
+        accountId:
+          type: string
+        accountMode:
+          type: string
+          enum: [simulated, real]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
 
     Strategy:
       type: object

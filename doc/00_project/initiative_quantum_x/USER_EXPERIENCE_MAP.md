@@ -1,7 +1,7 @@
 # USER_EXPERIENCE_MAP - quantum_x
 
 <!-- AI-TOOLS-MANAGED:PROJECT_DIR START -->
-- PROJECT_DIR: /Users/mauricewen/Projects/quantum x
+- PROJECT_DIR: /Users/mauricewen/Projects/08-quantum-trading
 <!-- AI-TOOLS-MANAGED:PROJECT_DIR END -->
 
 ## 角色与目标
@@ -16,6 +16,7 @@
 | 研究准备 | Data Hub / Feature Store | 数据可用、可追溯 | 数据版本与质量校验 | 数据报告 |
 | 策略开发 | Research Studio | 快速验证策略 | 训练/回测/实验记录 | 实验日志 |
 | 策略评审 | Strategy Registry | 可审计上线 | 版本控制与审批 | 审批记录 |
+| 账户准备 | Accounts | 选择模拟/实盘并完成接入与激活 | 账户分离、权限与风控提示、显式激活 | 授权/接入记录 |
 | 模拟交易 | Paper Trading | 风险可控试运行 | 统一执行链路 | 仿真报表 |
 | 小资金实盘 | Execution Console | 稳定执行 | 风控约束、审计日志 | 实盘日志 |
 | 放量与跟单 | Copy Trading Hub | 扩大规模 | 信号分发与复制规则 | 跟单报表 |
@@ -26,6 +27,8 @@
 - 回测与实盘偏差
 - 风控触发与异常处理时长
 - 跟单信号延迟与执行偏差
+- 账户接入时长与授权完成率
+- 模拟/实盘切换成功率
 
 ## UI/UX 规范合规状态（PDCA-2 审计）
 
@@ -42,3 +45,8 @@
 
 **审计日期**: 2026-01-28
 **结论**: 无需代码变更，UI/UX 已符合 ui-skills 和 web-interface-guidelines 规范
+
+## UI/UX 优化 SOP（2026-01-28）
+- 目标页面：`/accounts`
+- 问题与修复：页面节奏对齐全站基线（`space-y-6`），主/次按钮层级明确（仅保留一个默认主按钮）
+- 验证证据：network/console/performance/visual regression 结果 + 截图
