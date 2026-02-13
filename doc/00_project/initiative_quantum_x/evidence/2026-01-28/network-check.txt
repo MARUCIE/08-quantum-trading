@@ -1,0 +1,59 @@
+Network check timestamp: Thu Jan 29 02:45:38 UTC 2026
+Frontend base: http://localhost:3003
+API base: http://localhost:3101/api
+Create simulated account:
+{"id":"sim_1769654738821","name":"SOP Sim Account","mode":"simulated","status":"active","createdAt":"2026-01-29T02:45:38.821Z","updatedAt":"2026-01-29T02:45:38.821Z","metadata":{"initialCapital":100000}}
+
+GET / -> 000
+GET /accounts -> 000
+GET /trading -> 000
+GET /settings -> 000
+GET /login -> 000
+GET /api/accounts -> 200
+GET /api/accounts/active -> 200
+GET /api/portfolio/stats -> 200
+GET /api/portfolio/positions -> 200
+GET /api/orders -> 200
+GET /api/trades -> 200
+GET /api/market/ticker?symbol=BTCUSDT -> 500
+GET /api/market/klines?symbol=BTCUSDT&interval=1h&limit=5 -> 500
+GET /api/market/trades?symbol=BTCUSDT&limit=5 -> 500
+
+Network check retry timestamp: Thu Jan 29 02:50:14 UTC 2026
+Frontend base: http://localhost:3000
+API base: http://localhost:3101/api
+GET / -> 200
+GET /accounts -> 200
+GET /trading -> 200
+GET /settings -> 200
+GET /login -> 200
+GET /api/accounts -> 200
+GET /api/accounts/active -> 200
+GET /api/portfolio/stats -> 200
+GET /api/portfolio/positions -> 200
+GET /api/orders -> 200
+GET /api/trades -> 200
+GET /api/market/ticker?symbol=BTCUSDT -> 500
+GET /api/market/klines?symbol=BTCUSDT&interval=1h&limit=5 -> 500
+GET /api/market/trades?symbol=BTCUSDT&limit=5 -> 500
+
+Network check retry 2 timestamp: Thu Jan 29 02:52:08 UTC 2026
+Frontend base: http://localhost:3000
+API base: http://localhost:3101/api
+Create simulated account:
+{"id":"sim_1769655128947","name":"SOP Sim Account","mode":"simulated","status":"active","createdAt":"2026-01-29T02:52:08.947Z","updatedAt":"2026-01-29T02:52:08.947Z","metadata":{"initialCapital":100000}}
+
+GET / -> 200
+GET /accounts -> 200
+GET /trading -> 200
+GET /settings -> 200
+GET /login -> 200
+GET /api/accounts -> 200
+GET /api/accounts/active -> 200
+GET /api/portfolio/stats -> 200
+GET /api/portfolio/positions -> 200
+GET /api/orders -> 200
+GET /api/trades -> 200
+GET /api/market/ticker?symbol=BTCUSDT -> 200
+GET /api/market/klines?symbol=BTCUSDT&interval=1h&limit=5 -> 200
+GET /api/market/trades?symbol=BTCUSDT&limit=5 -> 200

@@ -5,7 +5,9 @@
  */
 
 import { ApiServer } from './server.js';
+import { createApiRequestGuard } from './auth-policy.js';
 import { BinanceClient } from '../data/binance-client.js';
+import type { OHLCVBar, Ticker, Trade, KlineInterval } from '../types/market.js';
 import { RiskMonitor } from '../risk/monitor.js';
 import { RiskChecker } from '../risk/checker.js';
 import { AuditLogger } from '../risk/audit.js';
@@ -76,8 +78,30 @@ const riskMonitor = new RiskMonitor(MVP_RISK_CONFIG);
 const riskChecker = new RiskChecker(MVP_RISK_CONFIG);
 const auditLogger = new AuditLogger('./audit');
 
+const marketCache = {
+  ticker: new Map<string, Ticker>(),
+  klines: new Map<string, OHLCVBar[]>(),
+  trades: new Map<string, Trade[]>(),
+};
+
+function createFallbackTicker(symbol: string): Ticker {
+  return {
+    timestamp: Date.now(),
+    symbol: symbol.toUpperCase(),
+    exchange: 'binance',
+    bid: 0,
+    ask: 0,
+    bidSize: 0,
+    askSize: 0,
+    last: 0,
+    lastSize: 0,
+  };
+}
+
 
 export function registerRoutes(server: ApiServer): void {
+  server.setRequestGuard(createApiRequestGuard());
+
   // Health check (liveness probe)
   // Returns basic health status - fast response, no dependency checks
   server.get('/api/health', (_req, res) => {
@@ -544,29 +568,35 @@ export function registerRoutes(server: ApiServer): void {
     const symbol = query.get('symbol') || 'BTCUSDT';
     const interval = query.get('interval') || '1h';
     const limit = parseInt(query.get('limit') || '100', 10);
+    const cacheKey = `${symbol}:${interval}`;
 
     try {
       const klines = await binanceClient.getKlines(
         symbol.replace('/', ''),
-        interval as any,
+        interval as KlineInterval,
         { limit }
       );
+      marketCache.klines.set(cacheKey, klines);
       server.sendJson(res, 200, klines);
     } catch (error) {
       console.error('[API] Klines error:', error);
-      server.sendJson(res, 500, { error: 'Failed to fetch klines' });
+      const cached = marketCache.klines.get(cacheKey);
+      server.sendJson(res, 200, cached ? cached.slice(-limit) : []);
     }
   });
 
   server.get('/api/market/ticker', async (_req, res, _params, query) => {
     const symbol = query.get('symbol') || 'BTCUSDT';
+    const cacheKey = symbol.toUpperCase();
 
     try {
       const ticker = await binanceClient.getTicker(symbol.replace('/', ''));
+      marketCache.ticker.set(cacheKey, ticker);
       server.sendJson(res, 200, ticker);
     } catch (error) {
       console.error('[API] Ticker error:', error);
-      server.sendJson(res, 500, { error: 'Failed to fetch ticker' });
+      const cached = marketCache.ticker.get(cacheKey);
+      server.sendJson(res, 200, cached ?? createFallbackTicker(symbol));
     }
   });
 
@@ -577,26 +607,36 @@ export function registerRoutes(server: ApiServer): void {
       .filter(Boolean);
 
     try {
-      const tickers = await Promise.all(
-        symbols.map((symbol) => binanceClient.getTicker(symbol))
-      );
-      server.sendJson(res, 200, tickers);
+      const results: Ticker[] = [];
+      for (const symbol of symbols) {
+        try {
+          const ticker = await binanceClient.getTicker(symbol);
+          marketCache.ticker.set(symbol.toUpperCase(), ticker);
+          results.push(ticker);
+        } catch (error) {
+          console.error('[API] Tickers error:', symbol, error);
+        }
+      }
+      server.sendJson(res, 200, results);
     } catch (error) {
       console.error('[API] Tickers error:', error);
-      server.sendJson(res, 500, { error: 'Failed to fetch tickers' });
+      server.sendJson(res, 200, []);
     }
   });
 
   server.get('/api/market/trades', async (_req, res, _params, query) => {
     const symbol = (query.get('symbol') || 'BTCUSDT').replace('/', '');
     const limit = parseInt(query.get('limit') || '50', 10);
+    const cacheKey = symbol.toUpperCase();
 
     try {
       const trades = await binanceClient.getTrades(symbol, limit);
+      marketCache.trades.set(cacheKey, trades);
       server.sendJson(res, 200, trades);
     } catch (error) {
       console.error('[API] Trades error:', error);
-      server.sendJson(res, 500, { error: 'Failed to fetch trades' });
+      const cached = marketCache.trades.get(cacheKey);
+      server.sendJson(res, 200, cached ? cached.slice(-limit) : []);
     }
   });
 

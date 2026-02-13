@@ -19,8 +19,26 @@ type RouteHandler = (
   query: URLSearchParams
 ) => Promise<void> | void;
 
+export interface RequestGuardContext {
+  req: IncomingMessage;
+  method: string;
+  path: string;
+  routePath: string;
+}
+
+export interface RequestGuardDecision {
+  allowed: boolean;
+  status?: number;
+  body?: unknown;
+}
+
+export type RequestGuard = (
+  context: RequestGuardContext
+) => RequestGuardDecision | Promise<RequestGuardDecision>;
+
 interface Route {
   method: string;
+  path: string;
   pattern: RegExp;
   paramNames: string[];
   handler: RouteHandler;
@@ -29,6 +47,7 @@ interface Route {
 export class ApiServer {
   private routes: Route[] = [];
   private port: number;
+  private requestGuard: RequestGuard | null = null;
 
   constructor(port: number = 3001) {
     this.port = port;
@@ -45,7 +64,7 @@ export class ApiServer {
     });
     const pattern = new RegExp(`^${patternStr}$`);
 
-    this.routes.push({ method, pattern, paramNames, handler });
+    this.routes.push({ method, path, pattern, paramNames, handler });
   }
 
   get(path: string, handler: RouteHandler): void {
@@ -62,6 +81,13 @@ export class ApiServer {
 
   delete(path: string, handler: RouteHandler): void {
     this.route('DELETE', path, handler);
+  }
+
+  /**
+   * Register a centralized request guard (auth/contract checks).
+   */
+  setRequestGuard(guard: RequestGuard | null): void {
+    this.requestGuard = guard;
   }
 
   /**
@@ -194,7 +220,38 @@ export class ApiServer {
         params[name] = match[i + 1];
       });
 
-      await route.handler(req, res, params, url.searchParams);
+      if (this.requestGuard) {
+        const decision = await this.requestGuard({
+          req,
+          method,
+          path,
+          routePath: route.path,
+        });
+        if (!decision.allowed) {
+          this.sendJson(
+            res,
+            decision.status ?? 403,
+            decision.body ?? {
+              message: 'Forbidden',
+              code: 'FORBIDDEN',
+            }
+          );
+          return;
+        }
+      }
+
+      try {
+        await route.handler(req, res, params, url.searchParams);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Invalid JSON') {
+          this.sendJson(res, 400, {
+            message: 'Invalid JSON body',
+            code: 'INVALID_JSON',
+          });
+          return;
+        }
+        throw error;
+      }
       return;
     }
 
@@ -206,8 +263,45 @@ export class ApiServer {
    * Send JSON response
    */
   sendJson(res: ServerResponse, status: number, data: unknown): void {
+    const payload = this.normalizeErrorPayload(status, data);
     res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(data));
+    res.end(JSON.stringify(payload));
+  }
+
+  /**
+   * Normalize error responses to a stable contract.
+   * Canonical error shape:
+   *   { message: string, code: string, status: number, ...extras }
+   */
+  private normalizeErrorPayload(status: number, data: unknown): unknown {
+    if (status < 400 || typeof data !== 'object' || data === null || Array.isArray(data)) {
+      return data;
+    }
+
+    const record = data as Record<string, unknown>;
+
+    // Only normalize explicit error payloads.
+    if (typeof record.message !== 'string' && typeof record.error !== 'string') {
+      return data;
+    }
+
+    const message =
+      typeof record.message === 'string'
+        ? record.message
+        : typeof record.error === 'string'
+          ? record.error
+          : `HTTP ${status}`;
+
+    const next: Record<string, unknown> = { ...record };
+    delete next.error;
+    next.message = message;
+    next.status = status;
+
+    if (typeof next.code !== 'string' || !next.code) {
+      next.code = `HTTP_${status}`;
+    }
+
+    return next;
   }
 
   /**
@@ -220,6 +314,10 @@ export class ApiServer {
         body += chunk.toString();
       });
       req.on('end', () => {
+        if (!body.trim()) {
+          resolve({} as T);
+          return;
+        }
         try {
           resolve(JSON.parse(body) as T);
         } catch {

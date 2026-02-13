@@ -3,7 +3,7 @@ Title: Deliverables - initiative_quantum_x
 Scope: project
 Owner: ai-agent
 Status: active
-LastUpdated: 2026-01-28
+LastUpdated: 2026-02-12
 Related:
   - /doc/00_project/initiative_quantum_x/task_plan.md
   - /doc/00_project/initiative_quantum_x/notes.md
@@ -80,15 +80,19 @@ Related:
 | D66 | 账户接入与分离实现 | 后端账户模型与执行隔离可验证 | code | backend/src/accounts/*, backend/src/api/routes.ts, backend/src/execution/paper-service.ts, backend/src/risk/audit.ts, backend/docs/openapi.yaml |
 | D67 | 账户切换与接入 UI | 前端账户切换、接入状态与风控提示 | code | frontend/src/app/accounts/page.tsx, frontend/src/components/accounts/account-switcher.tsx, frontend/src/components/layout/*, frontend/src/lib/api/hooks/use-accounts.ts |
 | D68 | 账户模式验证证据 | UX Map 模拟测试 + ai check 通过 | evidence | doc/00_project/initiative_quantum_x/notes.md |
-| D69 | UI/UX SOP 证据 | `/accounts` 间距与主按钮层级一致性验证 | evidence | doc/00_project/initiative_quantum_x/notes.md, .mcp/screenshots/2026-01-28/ |
+| D69 | UI/UX SOP 证据 | `/accounts` 间距与主按钮层级一致性验证 | evidence | doc/00_project/initiative_quantum_x/notes.md, doc/00_project/initiative_quantum_x/evidence/2026-01-28/ |
 | D70 | 市场数据降级 | 上游不可用时返回空数据/缓存，避免 5xx | code+evidence | backend/src/api/routes.ts, doc/00_project/initiative_quantum_x/notes.md |
 | D70 | Risk/Audit 集成 | RiskChecker + AuditLogger 集成订单提交流 + /api/risk/status 端点 | code | backend/src/api/routes.ts |
 | D71 | 账户流程 E2E 测试 | 65 测试用例覆盖表单/验证/切换/可访问性/移动端 | code | frontend/e2e/account-flows.spec.ts |
-| D72 | 交付验证证据 | Round 1 ai check + Round 2 UX Map 模拟（8 张截图） | evidence | doc/00_project/initiative_quantum_x/notes.md, frontend/.mcp/screenshots/2026-01-28/ |
+| D72 | 交付验证证据 | Round 1 ai check + Round 2 UX Map 模拟（8 张截图） | evidence | doc/00_project/initiative_quantum_x/notes.md, doc/00_project/initiative_quantum_x/evidence/2026-01-28/ |
 | D73 | 性能基线定义 | KPI/阈值/测量方法/报告格式清晰 | docs | doc/00_project/initiative_quantum_x/PERFORMANCE_BASELINE.md |
 | D74 | 动态导入优化 | CandlestickChart + Sidebar 延迟加载 | code | frontend/src/components/charts/dynamic-candlestick-chart.tsx, frontend/src/components/layout/dynamic-sidebar.tsx |
 | D75 | Route-level Loading States | trading/backtest 页面骨架屏 | code | frontend/src/app/trading/loading.tsx, frontend/src/app/backtest/loading.tsx |
 | D76 | 性能优化验证结果 | Performance 91, LCP 3.5s, TBT 44ms | evidence | doc/00_project/initiative_quantum_x/PERFORMANCE_BASELINE.md |
+| D77 | 功能闭环完整实现检查（SOP 3.7） | 入口/系统/契约/验证四类闭环均完成；OpenAPI 路由差异=0；E2E full-loop 通过 | reports + logs + screenshots | outputs/sop-full-loop/3-7-f72886eb/ |
+| D78 | 多角色头脑风暴（SOP 1.3） | PM/设计/SEO 三角色输出完成；冲突与决策记录形成；PDCA 四文档同步；Round1/2 验证通过 | brainstorm reports + doc updates + ai check + UX smoke | outputs/1.3/1-3-915e27e6/reports/final_report.md |
+| D79 | SEO Public Surface 落地（SOP 1.3 Continue） | public 页面、sitemap、robots、默认 app noindex 策略生效；build 与导航冒烟通过 | implementation report + build + UX smoke | outputs/1.3/1-3-826a518f/reports/seo_implementation_report.md |
+| D80 | SEO Runtime 回归守门（SOP 1.3 Continue v2） | `features/*` 与 `docs/*` 页面 metadata/JSON-LD 全量对齐；新增 `public-routes/sitemap/robots` 回归测试并通过；Round1/2 验证通过 | regression report + vitest + build + UX smoke + ai check | outputs/1.3/1-3-a7270c8c/reports/final_report.md |
 
 # Release/Deployment Notes
 - rollout strategy: Local development → Paper trading → Testnet → Production
@@ -126,3 +130,45 @@ Related:
 - 2026-01-28: Added D70 for market data graceful degradation (no 5xx on upstream 451).
 - 2026-01-28: Added D70-D72 for T110-T112: Risk/Audit integration, Account flows E2E tests, Delivery verification evidence. **419/419 E2E tests pass**.
 - 2026-01-29: Added D73-D76 for T116-T130: Performance baseline definition, dynamic imports, route-level loading states, optimization results. **Performance 91, LCP 3.5s (-60%), TBT 44ms (-93%)**.
+- 2026-02-11: Added D77 for SOP 3.7 full-loop closure check: entrypoint/system/contract/verification reports, OpenAPI parity cleanup, and dedicated full-loop E2E evidence.
+- 2026-02-11: Added D78 for SOP 1.3 multi-role brainstorm: competitor/UX/SEO strategy outputs and PDCA docs sync evidence.
+- 2026-02-11: Added D79 for SOP 1.3 continue implementation: public SEO surface pages + sitemap/robots + noindex policy rollout.
+- 2026-02-12: Added D80 for SOP 1.3 continue v2: public pages metadata/JSON-LD full alignment + SEO runtime regression guardrails.
+
+## SOP 1.6 Deliverable (2026-02-12)
+- Deliverable: API contract and auth boundary sync (REST + WS + schema + callers + contract tests).
+- Evidence bundle: `outputs/1.6/1-6-f056f6f5/`.
+- Final report: `outputs/1.6/1-6-f056f6f5/reports/final_report.md`.
+
+## SOP 4.1 Deliverable (2026-02-12, run `4-1-873e9072`)
+- Deliverable: 项目级全链路回归（UX Map + E2E）Step 1-6 全部完成并关单。
+- Round 1: `ai check` PASS (`outputs/4.1/4-1-873e9072/logs/ai_check_round1_rerun.log`)
+- Round 2: UX Map 场景 PASS（`full-loop + persona`, chromium `6/6`）
+- Verification report: `outputs/4.1/4-1-873e9072/reports/step6_round1_round2.md`
+- Evidence root: `outputs/4.1/4-1-873e9072/`
+
+## SOP 5.1 Deliverable (2026-02-12, run `5-1-33ee81da`)
+- Deliverable: 联合验收与发布守门完成（产品/技术/质量三方门禁闭环）。
+- Round 1: `ai check` PASS (`outputs/5.1/5-1-33ee81da/logs/step3_ai_check.log`)
+- Round 2: UX Map 回归最终 PASS (`outputs/5.1/5-1-33ee81da/logs/step4_ux_round2_rerun4.log`)
+- Iteration closure: `outputs/5.1/5-1-33ee81da/reports/step5_ralph_loop.md`
+- Evidence root: `outputs/5.1/5-1-33ee81da/`
+
+## SOP 1.1 Deliverable (2026-02-12, run `1-1-c1a3a846`)
+- Deliverable: 一键全量交付（长任务）闭环完成。
+- Round 1 PASS: `outputs/1.1/1-1-c1a3a846/logs/step6_ai_check_round1.log`
+- Round 2 PASS: `outputs/1.1/1-1-c1a3a846/logs/step6_ux_round2.log`
+- FE/BE consistency PASS: `outputs/1.1/1-1-c1a3a846/reports/step7_fe_be_consistency.md`
+- Final closeout: `outputs/1.1/1-1-c1a3a846/reports/final_report.md`
+
+## SOP 3.2 Deliverable (2026-02-13, re-audit)
+- Deliverable: Frontend-backend consistency & entrypoint re-audit -- full cross-reference of 42 backend routes, auth-policy, OpenAPI, 25 frontend API calls, 44 sidebar nav links, 11 public routes. No inconsistencies found.
+- Round 1: 422/422 tests PASS (backend 128 + frontend 294), production build OK (61 routes)
+- Round 2: N/A (audit-only SOP, no code changes to validate via UX Map)
+- Evidence: `notes.md` lines 13-60, `SYSTEM_ARCHITECTURE.md` Route Inventory table
+- Task Closeout:
+  - [x] Skills: N/A (audit SOP, no new reusable skill extracted)
+  - [x] PDCA docs: SYSTEM_ARCHITECTURE.md updated with Route Inventory + verification timestamp
+  - [x] CLAUDE.md/AGENTS.md: N/A (no cross-task reusable rules produced)
+  - [x] Rolling Ledger: REQ-046, PRM-045, AR-030 appended
+  - [x] Three-end consistency: Local `0735777` = GitHub `0735777`; Production N/A (no deployment triggered by audit)

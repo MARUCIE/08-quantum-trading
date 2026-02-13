@@ -7,6 +7,17 @@ import { defineConfig, devices } from "@playwright/test";
  * @see https://playwright.dev/docs/test-configuration
  */
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
+const webServerCommand =
+  process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "npm run dev";
+const playwrightApiKey =
+  process.env.PLAYWRIGHT_API_KEY || process.env.NEXT_PUBLIC_API_KEY || "";
+const authHeaderValue = playwrightApiKey.startsWith("Bearer ")
+  ? playwrightApiKey
+  : playwrightApiKey
+    ? `Bearer ${playwrightApiKey}`
+    : null;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -18,9 +29,14 @@ export default defineConfig({
     ["html", { open: "never" }],
   ],
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
+    extraHTTPHeaders: authHeaderValue
+      ? {
+          Authorization: authHeaderValue,
+        }
+      : undefined,
     // Force English locale for consistent test results across machines
     locale: "en-US",
     // Set NEXT_LOCALE cookie for next-intl (defaults to zh without this)
@@ -67,8 +83,8 @@ export default defineConfig({
 
   // Run local dev server before starting the tests
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: webServerCommand,
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

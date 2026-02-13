@@ -1,0 +1,24 @@
+version: 1
+updated_at: 2026-02-11
+
+key_tasks:
+  doc_structure_check:
+    profile: strict_offline
+    command: "ls -1 doc/00_project/initiative_quantum_x | sort"
+    rationale: "Read-only compliance checks should never require network."
+
+  backend_typecheck:
+    profile: build_offline
+    command: "cd backend && npm run typecheck"
+    rationale: "Static validation in isolated filesystem/network context."
+
+  sandbox_network_guard_probe:
+    profile: strict_offline
+    command: "node -e \"const https=require('https');https.get('https://example.com',()=>{console.log('unexpected_network_access')}).on('error',()=>{console.log('network_blocked')})\""
+    rationale: "Proof that strict policy blocks external network calls."
+
+  persona_flow_smoke:
+    profile: integration_limited
+    command: "cd frontend && npx playwright test e2e/persona-real-flow.spec.ts --project=chromium --workers=1"
+    rationale: "E2E flow requires local service connectivity under bounded resources."
+

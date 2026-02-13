@@ -3,6 +3,7 @@
 ## Docs Map
 - 00_project/index.md: 项目级入口与 initiative 列表
 - 00_project/initiative_quantum_x/: 量化交易系统 initiative 全量文档
+- 00_project/initiative_08_quantum_trading/: SOP 执行台账（planning-with-files）
 - 10_features/: 功能级文档目录
 - 20_components/: 组件级文档目录
 - 99_archive/: 归档快照
@@ -12,9 +13,13 @@
 - PROJECT_DIR: /Users/mauricewen/Projects/08-quantum-trading
 - doc/index.md
 - doc/00_project/index.md
+- doc/00_project/initiative_08_quantum_trading/index.md
 - doc/00_project/initiative_quantum_x/index.md
 - doc/00_project/initiative_quantum_x/PRD.md
 - doc/00_project/initiative_quantum_x/SYSTEM_ARCHITECTURE.md
+- doc/00_project/initiative_quantum_x/ARCHITECTURE_ADR_2026-02-11.md
+- doc/00_project/initiative_quantum_x/ARCHITECTURE_RISK_REGISTER_2026-02-11.md
+- doc/00_project/initiative_quantum_x/SANDBOX_SECURITY_STATEMENT.md
 - doc/00_project/initiative_quantum_x/USER_EXPERIENCE_MAP.md
 - doc/00_project/initiative_quantum_x/PLATFORM_OPTIMIZATION_PLAN.md
 - doc/00_project/initiative_quantum_x/EXECUTION_ROADMAP.md
@@ -30,6 +35,10 @@
 - doc/00_project/initiative_quantum_x/task_plan.md
 - doc/00_project/initiative_quantum_x/notes.md
 - doc/00_project/initiative_quantum_x/deliverable.md
+- doc/00_project/initiative_08_quantum_trading/task_plan.md
+- doc/00_project/initiative_08_quantum_trading/notes.md
+- doc/00_project/initiative_08_quantum_trading/deliverable.md
+- doc/00_project/initiative_08_quantum_trading/PDCA_ITERATION_CHECKLIST.md
 - doc/00_project/initiative_quantum_x/REQUIREMENT_CONFIRMATION_ZH_FR.md
 - doc/00_project/initiative_quantum_x/ASSET_COMPLIANCE_DECISION.md
 - doc/00_project/initiative_quantum_x/DATA_VENDOR_CONFIG.md

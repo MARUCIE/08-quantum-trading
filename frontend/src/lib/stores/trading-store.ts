@@ -120,11 +120,30 @@ const SYMBOL_BASE_PRICES: Record<string, number> = {
   "IWM": 198.45,
 };
 
+function hashString(input: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function createSeededRandom(seedInput: string): () => number {
+  let seed = hashString(seedInput) || 1;
+  return () => {
+    seed = Math.imul(seed, 1664525) + 1013904223;
+    seed >>>= 0;
+    return seed / 4294967296;
+  };
+}
+
 const generateMockOrderBook = (symbol: string = "BTC/USDT"): {
   bids: OrderBookLevel[];
   asks: OrderBookLevel[];
 } => {
   const basePrice = SYMBOL_BASE_PRICES[symbol] || 43250;
+  const random = createSeededRandom(`orderbook:${symbol}`);
   // Calculate tick size based on price magnitude
   const tickSize = basePrice > 1000 ? 10 : basePrice > 100 ? 1 : basePrice > 10 ? 0.1 : 0.01;
   const bids: OrderBookLevel[] = [];
@@ -134,8 +153,8 @@ const generateMockOrderBook = (symbol: string = "BTC/USDT"): {
   let askTotal = 0;
 
   for (let i = 0; i < 15; i++) {
-    const bidQty = Math.random() * 5 + 0.1;
-    const askQty = Math.random() * 5 + 0.1;
+    const bidQty = random() * 5 + 0.1;
+    const askQty = random() * 5 + 0.1;
     bidTotal += bidQty;
     askTotal += askQty;
 
@@ -143,14 +162,14 @@ const generateMockOrderBook = (symbol: string = "BTC/USDT"): {
       price: parseFloat((basePrice - (i + 1) * tickSize).toFixed(4)),
       quantity: bidQty,
       total: bidTotal,
-      orders: Math.floor(Math.random() * 10) + 1,
+      orders: Math.floor(random() * 10) + 1,
     });
 
     asks.push({
       price: parseFloat((basePrice + (i + 1) * tickSize).toFixed(4)),
       quantity: askQty,
       total: askTotal,
-      orders: Math.floor(Math.random() * 10) + 1,
+      orders: Math.floor(random() * 10) + 1,
     });
   }
 

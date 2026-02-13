@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { apiClient } from "@/lib/api/client";
 
 // Types
 interface Trade {
@@ -96,27 +97,21 @@ export default function BacktestPage() {
   const [endDate, setEndDate] = useState("2025-12-31");
   const [initialCapital, setInitialCapital] = useState("100000");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
   const chartData = useMemo(() => generateMockCandlestickData(365), []);
 
   // Run backtest
   const runBacktest = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${apiUrl}/backtest/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          strategyId,
-          symbol: symbol.replace("/", ""),
-          startDate,
-          endDate,
-          initialCapital: parseFloat(initialCapital),
-          commission: 0.1,
-          slippage: 0.05,
-        }),
+      const data = await apiClient.post<BacktestResult>("/backtest/run", {
+        strategyId,
+        symbol: symbol.replace("/", ""),
+        startDate,
+        endDate,
+        initialCapital: parseFloat(initialCapital),
+        commission: 0.1,
+        slippage: 0.05,
       });
-      const data = await response.json();
       setResult(data);
     } catch (error) {
       console.error("Backtest failed:", error);

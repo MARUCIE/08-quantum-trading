@@ -39,7 +39,7 @@
 
 | Artifact | Path | Status |
 |----------|------|--------|
-| Test Screenshots | `.mcp/screenshots/` | Pending |
+| Test Screenshots | `doc/00_project/initiative_quantum_x/evidence/` | Pending |
 | Pain Points Registry | `task_plan.md` | Active |
 | Fix Commits | Git history | Pending |
 

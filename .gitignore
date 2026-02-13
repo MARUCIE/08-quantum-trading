@@ -1,0 +1,39 @@
+# ==============================
+# Repo-local ignores (root)
+# ==============================
+
+# Evidence / automation outputs
+/outputs/
+
+# Local agent state
+/.claude/
+/.codex/
+
+# Local runtime data (may contain credentials)
+/storage/
+/backend/storage/
+/audit/
+
+# Environment files (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+
+# Playwright / E2E artifacts
+/frontend/test-results/
+/frontend/playwright-report/
+/frontend/lighthouse-report*.json
+
+# MCP artifacts
+/frontend/.mcp/
+/.mcp/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS
+.DS_Store

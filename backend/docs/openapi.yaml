@@ -12,12 +12,32 @@ info:
     - Risk management and monitoring
 
     ## Authentication
-    MVP version uses no authentication. Production will require API keys.
+    API key authentication is enforced by default (`API_AUTH_MODE=required`).
+    Use either:
+    - Authorization: Bearer <api_key>
+    - X-API-Key: <api_key>
+
+    Public endpoints:
+    - GET /api/health
+    - GET /api/ready
+    - GET /metrics
+
+    ## Breaking Changes (2026-02-11)
+    - Non-public REST endpoints now require API keys.
+    - WebSocket connections now require `?token=<api_key>` and channel ACL validation.
+    - Error schema standardized to `{message, code, status}`.
 
     ## Rate Limits
     - 100 requests per minute (MVP)
     - 1000 requests per minute (Production)
   version: 0.1.0
+  x-breaking-changes:
+    - id: BC-2026-02-11-AUTH-REQUIRED
+      description: Non-public REST/WS entrypoints require API key auth.
+      effectiveDate: 2026-02-11
+    - id: BC-2026-02-11-ERROR-CONTRACT
+      description: Error payload normalized to {message, code, status}.
+      effectiveDate: 2026-02-11
   contact:
     name: Quantum X Team
     email: support@quantumx.dev
@@ -30,15 +50,27 @@ servers:
   - url: http://backend:3001
     description: Docker container
 
+security:
+  - BearerAuth: []
+  - ApiKeyHeader: []
+
 tags:
   - name: Health
     description: System health endpoints
+  - name: Observability
+    description: Readiness and metrics endpoints
   - name: Portfolio
     description: Portfolio and position management
   - name: Accounts
     description: Account mode management and linking
   - name: Strategies
     description: Strategy monitoring and control
+  - name: Backtest
+    description: Backtest execution endpoints
+  - name: API Keys
+    description: API key lifecycle and permission metadata
+  - name: Audit
+    description: Audit log query and integrity verification
   - name: Market
     description: Market data endpoints
   - name: Risk
@@ -51,13 +83,14 @@ paths:
       summary: Health check
       description: Returns service health status
       operationId: getHealth
+      security: []
       responses:
-        '200':
+        "200":
           description: Service is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
+                $ref: "#/components/schemas/HealthResponse"
 
   /api/portfolio/account:
     get:
@@ -66,24 +99,24 @@ paths:
       description: Returns full account state including equity, margin, and P&L
       operationId: getAccountState
       responses:
-        '200':
+        "200":
           description: Account state
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountState'
-        '404':
+                $ref: "#/components/schemas/AccountState"
+        "404":
           description: No active account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/portfolio/positions:
     get:
@@ -92,26 +125,26 @@ paths:
       description: Returns all currently open positions
       operationId: getPositions
       responses:
-        '200':
+        "200":
           description: List of positions
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Position'
-        '404':
+                  $ref: "#/components/schemas/Position"
+        "404":
           description: No active account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/portfolio/stats:
     get:
@@ -120,24 +153,24 @@ paths:
       description: Returns aggregated portfolio statistics
       operationId: getPortfolioStats
       responses:
-        '200':
+        "200":
           description: Portfolio statistics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PortfolioStats'
-        '404':
+                $ref: "#/components/schemas/PortfolioStats"
+        "404":
           description: No active account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/portfolio/positions/close:
     post:
@@ -157,7 +190,7 @@ paths:
                   type: string
                   example: BTC/USDT
       responses:
-        '200':
+        "200":
           description: Position closed
           content:
             application/json:
@@ -168,12 +201,12 @@ paths:
                     type: boolean
                   symbol:
                     type: string
-        '409':
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/orders:
     get:
@@ -188,20 +221,20 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: List of orders
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Order'
-        '409':
+                  $ref: "#/components/schemas/Order"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags: [Portfolio]
       summary: Submit order
@@ -212,20 +245,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderRequest'
+              $ref: "#/components/schemas/OrderRequest"
       responses:
-        '201':
+        "201":
           description: Order created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Order'
-        '409':
+                $ref: "#/components/schemas/Order"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/orders/{id}/cancel:
     post:
@@ -240,7 +273,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Cancel successful
           content:
             application/json:
@@ -249,18 +282,18 @@ paths:
                 properties:
                   success:
                     type: boolean
-        '404':
+        "404":
           description: Order not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/trades:
     get:
@@ -275,20 +308,20 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Trade list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Trade'
-        '409':
+                  $ref: "#/components/schemas/Trade"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/accounts:
     get:
@@ -297,7 +330,7 @@ paths:
       description: Returns all accounts and active account id
       operationId: listAccounts
       responses:
-        '200':
+        "200":
           description: Accounts
           content:
             application/json:
@@ -307,7 +340,7 @@ paths:
                   accounts:
                     type: array
                     items:
-                      $ref: '#/components/schemas/AccountRecord'
+                      $ref: "#/components/schemas/AccountRecord"
                   activeAccountId:
                     type: string
                     nullable: true
@@ -318,18 +351,18 @@ paths:
       summary: Get active account
       operationId: getActiveAccount
       responses:
-        '200':
+        "200":
           description: Active account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountRecord'
-        '404':
+                $ref: "#/components/schemas/AccountRecord"
+        "404":
           description: No active account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/accounts/simulated:
     post:
@@ -341,14 +374,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SimulatedAccountInput'
+              $ref: "#/components/schemas/SimulatedAccountInput"
       responses:
-        '201':
+        "201":
           description: Created simulated account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountRecord'
+                $ref: "#/components/schemas/AccountRecord"
 
   /api/accounts/real:
     post:
@@ -360,14 +393,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RealAccountInput'
+              $ref: "#/components/schemas/RealAccountInput"
       responses:
-        '201':
+        "201":
           description: Linked real account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountRecord'
+                $ref: "#/components/schemas/AccountRecord"
 
   /api/accounts/{id}/activate:
     post:
@@ -381,18 +414,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Activated account
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountRecord'
-        '404':
+                $ref: "#/components/schemas/AccountRecord"
+        "404":
           description: Account not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/strategies:
     get:
@@ -401,14 +434,44 @@ paths:
       description: Returns all configured trading strategies
       operationId: listStrategies
       responses:
-        '200':
+        "200":
           description: List of strategies
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Strategy'
+                  $ref: "#/components/schemas/Strategy"
+    post:
+      tags: [Strategies]
+      summary: Create strategy
+      description: Create a new strategy configuration
+      operationId: createStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Strategy created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Strategy"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/strategies/{id}:
     get:
@@ -423,18 +486,45 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Strategy details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Strategy'
-        '404':
+                $ref: "#/components/schemas/Strategy"
+        "404":
           description: Strategy not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: [Strategies]
+      summary: Delete strategy
+      description: Delete a strategy by ID
+      operationId: deleteStrategy
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Strategy deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Strategy not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/strategies/{id}/signals:
     get:
@@ -449,14 +539,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: List of signals
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Signal'
+                  $ref: "#/components/schemas/Signal"
 
   /api/strategies/{id}/status:
     put:
@@ -482,18 +572,18 @@ paths:
                   type: string
                   enum: [active, paused, stopped]
       responses:
-        '200':
+        "200":
           description: Strategy updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Strategy'
-        '404':
+                $ref: "#/components/schemas/Strategy"
+        "404":
           description: Strategy not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/market/klines:
     get:
@@ -511,7 +601,8 @@ paths:
           in: query
           schema:
             type: string
-            enum: [1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M]
+            enum:
+              [1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M]
             default: 1h
         - name: limit
           in: query
@@ -520,20 +611,20 @@ paths:
             default: 100
             maximum: 1000
       responses:
-        '200':
+        "200":
           description: OHLCV bars
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OHLCVBar'
-        '500':
+                  $ref: "#/components/schemas/OHLCVBar"
+        "500":
           description: Data fetch failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/market/ticker:
     get:
@@ -548,18 +639,18 @@ paths:
             type: string
             default: BTCUSDT
       responses:
-        '200':
+        "200":
           description: Ticker data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Ticker'
-        '500':
+                $ref: "#/components/schemas/Ticker"
+        "500":
           description: Data fetch failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/market/tickers:
     get:
@@ -568,14 +659,14 @@ paths:
       description: Returns tickers for all watched symbols
       operationId: getTickers
       responses:
-        '200':
+        "200":
           description: List of tickers
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TickerSummary'
+                  $ref: "#/components/schemas/TickerSummary"
 
   /api/market/trades:
     get:
@@ -590,14 +681,14 @@ paths:
             type: string
             default: BTC/USDT
       responses:
-        '200':
+        "200":
           description: List of trades
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Trade'
+                  $ref: "#/components/schemas/Trade"
 
   /api/risk/metrics:
     get:
@@ -606,18 +697,18 @@ paths:
       description: Returns current risk metrics and alerts
       operationId: getRiskMetrics
       responses:
-        '200':
+        "200":
           description: Risk metrics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RiskMetrics'
-        '409':
+                $ref: "#/components/schemas/RiskMetrics"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/risk/events:
     get:
@@ -637,20 +728,20 @@ paths:
             type: string
             enum: [info, warning, critical]
       responses:
-        '200':
+        "200":
           description: List of risk events
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RiskEvent'
-        '409':
+                  $ref: "#/components/schemas/RiskEvent"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/risk/limits:
     get:
@@ -659,20 +750,425 @@ paths:
       description: Returns configured risk limits for active account
       operationId: getRiskLimits
       responses:
-        '200':
+        "200":
           description: Risk limits
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RiskLimits'
-        '409':
+                $ref: "#/components/schemas/RiskLimits"
+        "409":
           description: Account mode mismatch
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
+
+  /api/risk/status:
+    get:
+      tags: [Risk]
+      summary: Get risk status
+      description: Validate current account state against risk limits
+      operationId: getRiskStatus
+      responses:
+        "200":
+          description: Risk status
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Account state not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: No active account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/audit/logs:
+    get:
+      tags: [Audit]
+      summary: Query audit logs
+      description: Query audit logs with action/actor/subject/time filters
+      operationId: queryAuditLogs
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: actor
+          in: query
+          schema:
+            type: string
+        - name: subject
+          in: query
+          schema:
+            type: string
+        - name: startTime
+          in: query
+          schema:
+            type: integer
+        - name: endTime
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/audit/stats:
+    get:
+      tags: [Audit]
+      summary: Get audit statistics
+      description: Return audit event statistics and integrity summary
+      operationId: getAuditStats
+      responses:
+        "200":
+          description: Audit stats
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/audit/verify:
+    get:
+      tags: [Audit]
+      summary: Verify audit integrity
+      description: Run integrity checks on audit log chain
+      operationId: verifyAuditIntegrity
+      responses:
+        "200":
+          description: Integrity verification result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/backtest/run:
+    post:
+      tags: [Backtest]
+      summary: Run backtest
+      description: Run a backtest job with provided strategy/date range/symbol config
+      operationId: runBacktest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Backtest result
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Backtest failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/backtest/strategies:
+    get:
+      tags: [Backtest]
+      summary: List backtestable strategies
+      description: Return strategy metadata for backtest UI selectors
+      operationId: listBacktestStrategies
+      responses:
+        "200":
+          description: Strategy list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/keys:
+    get:
+      tags: [API Keys]
+      summary: List API keys
+      description: Return API key list with aggregate stats
+      operationId: listApiKeys
+      responses:
+        "200":
+          description: API key list and stats
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags: [API Keys]
+      summary: Create API key
+      description: Create a new API key and return full secret once
+      operationId: createApiKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: API key created
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Invalid permissions or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Failed to create key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/keys/permissions:
+    get:
+      tags: [API Keys]
+      summary: Get permission catalog
+      description: Return all available permissions and grouped presets
+      operationId: getApiKeyPermissions
+      responses:
+        "200":
+          description: Permission metadata
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/keys/{id}:
+    get:
+      tags: [API Keys]
+      summary: Get API key
+      description: Return API key metadata by id
+      operationId: getApiKeyById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: API key metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Missing id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags: [API Keys]
+      summary: Update API key
+      description: Update API key metadata and policy
+      operationId: updateApiKey
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: API key updated
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Update failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: [API Keys]
+      summary: Revoke API key
+      description: Permanently revoke API key by id
+      operationId: revokeApiKey
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Key revoked
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Missing id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Revoke failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/keys/{id}/toggle:
+    post:
+      tags: [API Keys]
+      summary: Toggle API key active state
+      description: Activate/deactivate an API key
+      operationId: toggleApiKey
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active:
+                  type: boolean
+      responses:
+        "200":
+          description: Key state updated
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Toggle failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ready:
+    get:
+      tags: [Health, Observability]
+      summary: Readiness check
+      description: Validate upstream dependency connectivity before receiving traffic
+      operationId: getReadiness
+      security: []
+      responses:
+        "200":
+          description: Service ready
+          content:
+            application/json:
+              schema:
+                type: object
+        "503":
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /metrics:
+    get:
+      tags: [Observability]
+      summary: Prometheus metrics
+      description: Return Prometheus text exposition for scrape targets
+      operationId: getPrometheusMetrics
+      security: []
+      responses:
+        "200":
+          description: Prometheus metric text
+          content:
+            text/plain:
+              schema:
+                type: string
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: "Use Authorization: Bearer <api_key>."
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Alternative header to send API key directly.
   schemas:
     HealthResponse:
       type: object
@@ -721,7 +1217,7 @@ components:
         positions:
           type: array
           items:
-            $ref: '#/components/schemas/Position'
+            $ref: "#/components/schemas/Position"
         timestamp:
           type: integer
           format: int64
@@ -880,9 +1376,16 @@ components:
 
     Error:
       type: object
+      required: [message, code, status]
       properties:
-        error:
+        message:
           type: string
+        code:
+          type: string
+          example: AUTH_REQUIRED
+        status:
+          type: integer
+          example: 401
 
     Strategy:
       type: object
@@ -1051,7 +1554,7 @@ components:
         riskEvents:
           type: array
           items:
-            $ref: '#/components/schemas/RiskEvent'
+            $ref: "#/components/schemas/RiskEvent"
 
     RiskEvent:
       type: object
@@ -1072,9 +1575,3 @@ components:
           type: string
         data:
           type: object
-
-    Error:
-      type: object
-      properties:
-        error:
-          type: string

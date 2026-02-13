@@ -24,7 +24,11 @@ export type { ValidationRule, ValidationSchema, ValidationResult } from './valid
 
 export {
   apiKeyAuth,
+  getApiAuthMode,
+  getStaticApiKey,
   extractApiKey,
+  hasPermission,
+  authenticateApiKey,
   authenticateRequest,
   checkIpWhitelist,
   createAuthMiddleware,

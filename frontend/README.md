@@ -195,7 +195,9 @@ Create a `.env.local` file:
 
 ```bash
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_WS_URL=ws://localhost:3002
+NEXT_PUBLIC_API_KEY=<same-value-as-API_STATIC_KEY>
 
 # Feature Flags (optional)
 NEXT_PUBLIC_ENABLE_ANALYTICS=false

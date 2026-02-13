@@ -26,6 +26,9 @@ import {
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  apiClient,
+} from "@/lib/api/client";
 
 // Types
 interface AuditEntry {
@@ -45,6 +48,10 @@ interface AuditStats {
   lastEntry?: number;
   integrityValid: boolean;
   integrityErrors: number;
+}
+
+interface AuditLogsResponse {
+  logs: AuditEntry[];
 }
 
 const ACTION_TYPES = [
@@ -81,8 +88,6 @@ export default function AuditPage() {
   const [actionFilter, setActionFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
   // Fetch audit logs
   const fetchLogs = async () => {
     try {
@@ -91,8 +96,7 @@ export default function AuditPage() {
         params.set("action", actionFilter);
       }
 
-      const response = await fetch(`${apiUrl}/audit/logs?${params}`);
-      const data = await response.json();
+      const data = await apiClient.get<AuditLogsResponse>(`/audit/logs?${params.toString()}`);
       setLogs(data.logs || []);
     } catch (error) {
       console.error("Failed to fetch audit logs:", error);
@@ -102,8 +106,7 @@ export default function AuditPage() {
   // Fetch audit stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${apiUrl}/audit/stats`);
-      const data = await response.json();
+      const data = await apiClient.get<AuditStats>("/audit/stats");
       setStats(data);
     } catch (error) {
       console.error("Failed to fetch audit stats:", error);

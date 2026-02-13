@@ -4,7 +4,16 @@
  * Immutable audit trail for compliance and debugging.
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
+import {
+  appendFileSync,
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  readSync,
+  statSync,
+} from 'fs';
 import { join } from 'path';
 
 /** Audit entry types */
@@ -42,14 +51,21 @@ interface AuditQuery {
 }
 
 export class AuditLogger {
+  private static readonly DEFAULT_LOAD_MAX_BYTES = 8 * 1024 * 1024;
+
   private logDir: string;
   private currentFile: string;
   private entries: AuditEntry[] = [];
   private lastHash: string = '';
   private flushInterval: NodeJS.Timeout | null = null;
+  private loadMaxBytes: number;
 
-  constructor(logDir: string = './audit') {
+  constructor(
+    logDir: string = './audit',
+    loadMaxBytes: number = AuditLogger.DEFAULT_LOAD_MAX_BYTES
+  ) {
     this.logDir = logDir;
+    this.loadMaxBytes = loadMaxBytes;
     this.ensureDir(logDir);
     this.currentFile = this.getLogFilename();
     this.loadCurrentFile();
@@ -374,10 +390,17 @@ export class AuditLogger {
     if (!existsSync(filepath)) return;
 
     try {
-      const content = readFileSync(filepath, 'utf-8');
+      const content = this.readFileTail(filepath);
       const lines = content.trim().split('\n').filter(Boolean);
 
-      this.entries = lines.map((line) => JSON.parse(line) as AuditEntry);
+      this.entries = [];
+      for (const line of lines) {
+        try {
+          this.entries.push(JSON.parse(line) as AuditEntry);
+        } catch {
+          // Tail reads may cut into a partial line; ignore malformed records.
+        }
+      }
 
       if (this.entries.length > 0) {
         this.lastHash = this.entries[this.entries.length - 1].hash || '';
@@ -385,6 +408,32 @@ export class AuditLogger {
     } catch (error) {
       console.error('[AuditLogger] Failed to load current file:', error);
     }
+  }
+
+  private readFileTail(filepath: string): string {
+    const size = statSync(filepath).size;
+    if (size <= this.loadMaxBytes) {
+      return readFileSync(filepath, 'utf-8');
+    }
+
+    const bytesToRead = Math.min(size, this.loadMaxBytes);
+    const offset = size - bytesToRead;
+    const buffer = Buffer.alloc(bytesToRead);
+    const fd = openSync(filepath, 'r');
+
+    try {
+      readSync(fd, buffer, 0, bytesToRead, offset);
+    } finally {
+      closeSync(fd);
+    }
+
+    const chunk = buffer.toString('utf-8');
+    const firstNewline = chunk.indexOf('\n');
+    if (firstNewline === -1) {
+      return '';
+    }
+
+    return chunk.slice(firstNewline + 1);
   }
 
   private checkRotation(): void {

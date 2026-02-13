@@ -11,6 +11,12 @@ import {
   ChatMessage,
   AIError,
 } from '../types';
+import {
+  fetchWithTimeout,
+  isAIError,
+  toProviderHttpError,
+  toProviderNetworkError,
+} from './http';
 
 const GOOGLE_AI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -80,7 +86,7 @@ export async function googleChat(
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout('google', url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,15 +95,7 @@ export async function googleChat(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const error: AIError = {
-        code: `google_${response.status}`,
-        message: errorData.error?.message || `Google AI error: ${response.status}`,
-        provider: 'google',
-        status: response.status,
-        retryable: response.status >= 500 || response.status === 429,
-      };
-      throw error;
+      throw await toProviderHttpError('google', response, 'Google AI error');
     }
 
     const data: GoogleResponse = await response.json();
@@ -129,15 +127,10 @@ export async function googleChat(
       finishReason: candidate.finishReason === 'STOP' ? 'stop' : undefined,
     };
   } catch (error) {
-    if ((error as AIError).provider === 'google') {
+    if (isAIError(error)) {
       throw error;
     }
-    throw {
-      code: 'google_network_error',
-      message: error instanceof Error ? error.message : 'Network error',
-      provider: 'google',
-      retryable: true,
-    } as AIError;
+    throw toProviderNetworkError('google', error);
   }
 }
 
@@ -162,7 +155,7 @@ export async function* googleChatStream(
     body.systemInstruction = systemInstruction;
   }
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout('google', url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -171,14 +164,7 @@ export async function* googleChatStream(
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw {
-      code: `google_${response.status}`,
-      message: errorData.error?.message || `Google AI error: ${response.status}`,
-      provider: 'google',
-      status: response.status,
-      retryable: response.status >= 500 || response.status === 429,
-    } as AIError;
+    throw await toProviderHttpError('google', response, 'Google AI error');
   }
 
   const reader = response.body?.getReader();

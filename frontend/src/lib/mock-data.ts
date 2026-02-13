@@ -25,6 +25,24 @@ const SYMBOL_BASE_PRICES: Record<string, number> = {
   "IWM": 198.45,
 };
 
+function hashString(input: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function createSeededRandom(seedInput: string): () => number {
+  let seed = hashString(seedInput) || 1;
+  return () => {
+    seed = Math.imul(seed, 1664525) + 1013904223;
+    seed >>>= 0;
+    return seed / 4294967296;
+  };
+}
+
 // Generate mock OHLCV data
 export function generateMockCandlestickData(
   days: number = 90,
@@ -32,21 +50,25 @@ export function generateMockCandlestickData(
 ): CandlestickData<Time>[] {
   const data: CandlestickData<Time>[] = [];
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   // Use symbol-specific base price or default to BTC-like price
   let basePrice = symbol ? (SYMBOL_BASE_PRICES[symbol] || 42000) : 42000;
+  const random = createSeededRandom(
+    `candles:${symbol || "default"}:${days}:${now.toISOString().slice(0, 10)}`
+  );
 
   for (let i = days; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
 
     // Random walk
-    const change = (Math.random() - 0.48) * basePrice * 0.03;
+    const change = (random() - 0.48) * basePrice * 0.03;
     basePrice += change;
 
     const open = basePrice;
-    const close = basePrice + (Math.random() - 0.5) * basePrice * 0.02;
-    const high = Math.max(open, close) + Math.random() * basePrice * 0.01;
-    const low = Math.min(open, close) - Math.random() * basePrice * 0.01;
+    const close = basePrice + (random() - 0.5) * basePrice * 0.02;
+    const high = Math.max(open, close) + random() * basePrice * 0.01;
+    const low = Math.min(open, close) - random() * basePrice * 0.01;
 
     data.push({
       time: (date.getTime() / 1000) as Time,
@@ -66,14 +88,18 @@ export function generateMockCandlestickData(
 export function generateMockEquityCurve(days: number = 90) {
   const data = [];
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   let equity = 100000;
+  const random = createSeededRandom(
+    `equity:${days}:${now.toISOString().slice(0, 10)}`
+  );
 
   for (let i = days; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
 
     // Slight upward bias
-    const dailyReturn = (Math.random() - 0.45) * 0.02;
+    const dailyReturn = (random() - 0.45) * 0.02;
     equity *= 1 + dailyReturn;
 
     data.push({

@@ -1,0 +1,57 @@
+version: 1
+owner: ai-agent
+updated_at: 2026-02-11
+
+profiles:
+  strict_offline:
+    description: "Default policy for low-risk checks with no network egress."
+    container_image: "node:20-alpine"
+    network: "none"
+    filesystem:
+      workspace: "read-only"
+      writable_mounts:
+        - "/workspace/outputs"
+        - "/tmp"
+    resources:
+      cpu: "1.0"
+      memory: "1024m"
+      pids_limit: 128
+    timeout_seconds: 300
+
+  build_offline:
+    description: "Typecheck/build validation in isolation without network."
+    container_image: "node:20-alpine"
+    network: "none"
+    filesystem:
+      workspace: "read-only"
+      writable_mounts:
+        - "/workspace/outputs"
+        - "/tmp"
+    resources:
+      cpu: "2.0"
+      memory: "2048m"
+      pids_limit: 256
+    timeout_seconds: 900
+
+  integration_limited:
+    description: "Integration/e2e sandbox with constrained local network usage."
+    container_image: "node:20-alpine"
+    network: "bridge"
+    allowed_hosts:
+      - "host.docker.internal"
+      - "localhost"
+    filesystem:
+      workspace: "read-only"
+      writable_mounts:
+        - "/workspace/outputs"
+        - "/tmp"
+    resources:
+      cpu: "2.0"
+      memory: "4096m"
+      pids_limit: 512
+    timeout_seconds: 1800
+
+cloud_fallback_order:
+  - "daytona"
+  - "modal"
+

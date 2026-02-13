@@ -8,6 +8,9 @@
 ## 关键产物入口
 - PRD.md
 - SYSTEM_ARCHITECTURE.md
+- ARCHITECTURE_ADR_2026-02-11.md
+- ARCHITECTURE_RISK_REGISTER_2026-02-11.md
+- SANDBOX_SECURITY_STATEMENT.md
 - USER_EXPERIENCE_MAP.md
 - PLATFORM_OPTIMIZATION_PLAN.md
 - EXECUTION_ROADMAP.md
@@ -28,4 +31,4 @@
 ## 状态
 - Stage: planning (MVP plan ready)
 - Owner: ai-agent
-- LastUpdated: 2026-01-28
+- LastUpdated: 2026-02-11

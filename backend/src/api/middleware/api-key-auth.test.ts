@@ -219,7 +219,7 @@ describe('API Key Authentication Middleware', () => {
 
       const result = auth(req, res);
       expect(result.authenticated).toBe(false);
-      expect(res.statusCode).toBe(401);
+      expect(res.statusCode).toBe(403);
     });
   });
 

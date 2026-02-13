@@ -5,6 +5,8 @@
  * Features automatic reconnection and subscription management.
  */
 
+import { getApiAuthToken } from "../api/client";
+
 export type WsMessageType =
   | "subscribe"
   | "unsubscribe"
@@ -40,6 +42,23 @@ const DEFAULT_CONFIG: WsClientConfig = {
   maxReconnectAttempts: 10,
 };
 
+export function buildWsUrlWithToken(rawUrl: string, token: string | null): string {
+  const normalized = rawUrl.trim();
+  if (!token) {
+    return normalized;
+  }
+
+  try {
+    const wsUrl = new URL(normalized);
+    if (!wsUrl.searchParams.has("token")) {
+      wsUrl.searchParams.set("token", token);
+    }
+    return wsUrl.toString();
+  } catch {
+    return normalized;
+  }
+}
+
 export class QuantumWsClient {
   private ws: WebSocket | null = null;
   private config: WsClientConfig;
@@ -51,7 +70,11 @@ export class QuantumWsClient {
   private isManualClose = false;
 
   constructor(config: Partial<WsClientConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
+    const merged = { ...DEFAULT_CONFIG, ...config };
+    this.config = {
+      ...merged,
+      url: buildWsUrlWithToken(merged.url, getApiAuthToken()),
+    };
   }
 
   /**

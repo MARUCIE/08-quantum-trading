@@ -24,7 +24,7 @@ AI-native quantitative trading system for crypto, stocks, and futures.
 cd backend
 npm install
 cp .env.example .env.local
-# Edit .env.local with your Binance API keys (optional for testnet)
+# Edit .env.local (keep API_STATIC_KEY and NEXT_PUBLIC_API_KEY aligned for local auth)
 npm run dev
 ```
 

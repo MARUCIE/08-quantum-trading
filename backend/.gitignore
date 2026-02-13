@@ -12,6 +12,7 @@ dist/
 # Data storage (runtime data, not source code)
 /data/
 /audit/
+/storage/
 
 # IDE
 .vscode/

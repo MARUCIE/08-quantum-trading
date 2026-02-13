@@ -11,6 +11,12 @@ import {
   ChatMessage,
   AIError,
 } from '../types';
+import {
+  fetchWithTimeout,
+  isAIError,
+  toProviderHttpError,
+  toProviderNetworkError,
+} from './http';
 
 const POE_API_BASE_URL = 'https://api.poe.com/v1';
 
@@ -84,7 +90,7 @@ export async function poeChat(
   };
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout('poe', url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -100,15 +106,7 @@ export async function poeChat(
     }
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const error: AIError = {
-        code: `poe_${response.status}`,
-        message: errorData.error?.message || `Poe API error: ${response.status}`,
-        provider: 'poe',
-        status: response.status,
-        retryable: response.status >= 500 || response.status === 429,
-      };
-      throw error;
+      throw await toProviderHttpError('poe', response, 'Poe API error');
     }
 
     const data: OpenAIResponse = await response.json();
@@ -139,15 +137,10 @@ export async function poeChat(
       finishReason: choice.finish_reason || undefined,
     };
   } catch (error) {
-    if ((error as AIError).provider === 'poe') {
+    if (isAIError(error)) {
       throw error;
     }
-    throw {
-      code: 'poe_network_error',
-      message: error instanceof Error ? error.message : 'Network error',
-      provider: 'poe',
-      retryable: true,
-    } as AIError;
+    throw toProviderNetworkError('poe', error);
   }
 }
 
@@ -166,7 +159,7 @@ export async function* poeChatStream(
     stream: true,
   };
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout('poe', url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -176,14 +169,7 @@ export async function* poeChatStream(
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw {
-      code: `poe_${response.status}`,
-      message: errorData.error?.message || `Poe API error: ${response.status}`,
-      provider: 'poe',
-      status: response.status,
-      retryable: response.status >= 500 || response.status === 429,
-    } as AIError;
+    throw await toProviderHttpError('poe', response, 'Poe API error');
   }
 
   const reader = response.body?.getReader();

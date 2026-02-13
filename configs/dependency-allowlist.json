@@ -1,0 +1,6 @@
+{
+  "allowed_hosts": [
+    "registry.npmjs.org"
+  ],
+  "allowed_new_dependencies": []
+}

@@ -7,10 +7,13 @@
 
 import { IncomingMessage, ServerResponse } from 'http';
 import {
+  ALL_PERMISSIONS,
   apiKeyManager,
   type ApiKeyPermission,
   type ApiKeyRecord,
 } from '../../auth/index.js';
+
+export type ApiAuthMode = 'required' | 'off';
 
 /** Authentication result */
 export interface AuthResult {
@@ -27,6 +30,42 @@ export interface ProtectedRouteOptions {
   allowPublic?: boolean;
   /** Custom error handler */
   onError?: (res: ServerResponse, error: string) => void;
+}
+
+/**
+ * Resolve API auth mode from environment.
+ * - required: enforce API key auth
+ * - off: disable auth checks (local/offline troubleshooting only)
+ */
+export function getApiAuthMode(): ApiAuthMode {
+  const raw = (process.env.API_AUTH_MODE || 'required').trim().toLowerCase();
+  return raw === 'off' ? 'off' : 'required';
+}
+
+/**
+ * Optional static API key injected via environment.
+ * Useful for non-production bootstrap and deterministic local testing.
+ */
+export function getStaticApiKey(): string | null {
+  const key = process.env.API_STATIC_KEY?.trim();
+  return key ? key : null;
+}
+
+function createStaticApiKeyRecord(): ApiKeyRecord {
+  return {
+    id: 'static_env_key',
+    name: 'Static Environment API Key',
+    keyPrefix: 'static_env_key',
+    keyHash: 'env:static',
+    permissions: [...ALL_PERMISSIONS],
+    createdAt: 0,
+    lastUsedAt: Date.now(),
+    expiresAt: null,
+    isActive: true,
+    ipWhitelist: null,
+    rateLimit: Number.MAX_SAFE_INTEGER,
+    usageCount: 0,
+  };
 }
 
 /**
@@ -53,7 +92,75 @@ export function extractApiKey(req: IncomingMessage): string | null {
 }
 
 /**
- * Authenticate a request using API key
+ * Check if an API key record has required permission.
+ */
+export function hasPermission(
+  apiKey: ApiKeyRecord,
+  requiredPermission?: ApiKeyPermission
+): boolean {
+  if (!requiredPermission) {
+    return true;
+  }
+  if (apiKey.permissions.includes('admin')) {
+    return true;
+  }
+  return apiKey.permissions.includes(requiredPermission);
+}
+
+/**
+ * Authenticate a raw API key.
+ */
+export function authenticateApiKey(
+  key: string,
+  requiredPermission?: ApiKeyPermission
+): AuthResult {
+  if (getApiAuthMode() === 'off') {
+    return { authenticated: true };
+  }
+
+  const normalizedKey = key.trim();
+  const staticKey = getStaticApiKey();
+  if (staticKey && normalizedKey === staticKey) {
+    const apiKey = createStaticApiKeyRecord();
+    if (!hasPermission(apiKey, requiredPermission)) {
+      return {
+        authenticated: false,
+        error: `Missing permission: ${requiredPermission}`,
+      };
+    }
+    return { authenticated: true, apiKey };
+  }
+
+  const validation = apiKeyManager.validate(normalizedKey, requiredPermission);
+  if (!validation.valid) {
+    return {
+      authenticated: false,
+      error: validation.error || 'Invalid API key',
+    };
+  }
+
+  if (!validation.record) {
+    return {
+      authenticated: false,
+      error: 'API key validation returned no record',
+    };
+  }
+
+  if (!hasPermission(validation.record, requiredPermission)) {
+    return {
+      authenticated: false,
+      error: `Missing permission: ${requiredPermission}`,
+    };
+  }
+
+  return {
+    authenticated: true,
+    apiKey: validation.record,
+  };
+}
+
+/**
+ * Authenticate a request using API key headers.
  */
 export function authenticateRequest(
   req: IncomingMessage,
@@ -62,25 +169,16 @@ export function authenticateRequest(
   const key = extractApiKey(req);
 
   if (!key) {
+    if (getApiAuthMode() === 'off') {
+      return { authenticated: true };
+    }
     return {
       authenticated: false,
       error: 'API key required. Use Authorization: Bearer <key> or X-API-Key header.',
     };
   }
 
-  const validation = apiKeyManager.validate(key, requiredPermission);
-
-  if (!validation.valid) {
-    return {
-      authenticated: false,
-      error: validation.error || 'Invalid API key',
-    };
-  }
-
-  return {
-    authenticated: true,
-    apiKey: validation.record,
-  };
+  return authenticateApiKey(key, requiredPermission);
 }
 
 /**
@@ -103,11 +201,19 @@ export function checkIpWhitelist(
  * Default error handler for authentication failures
  */
 function defaultErrorHandler(res: ServerResponse, error: string): void {
-  res.writeHead(401, {
+  const forbidden = error.includes('Missing permission');
+  const status = forbidden ? 403 : 401;
+  res.writeHead(status, {
     'Content-Type': 'application/json',
     'WWW-Authenticate': 'Bearer realm="api"',
   });
-  res.end(JSON.stringify({ error }));
+  res.end(
+    JSON.stringify({
+      message: error,
+      code: forbidden ? 'AUTH_FORBIDDEN' : 'AUTH_REQUIRED',
+      status,
+    })
+  );
 }
 
 /**
@@ -243,7 +349,11 @@ export function withAuth<T extends (...args: unknown[]) => unknown>(
 
 // Export default instance
 export const apiKeyAuth = {
+  getApiAuthMode,
+  getStaticApiKey,
   extractApiKey,
+  hasPermission,
+  authenticateApiKey,
   authenticateRequest,
   checkIpWhitelist,
   createAuthMiddleware,

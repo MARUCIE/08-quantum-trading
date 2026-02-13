@@ -13,12 +13,18 @@ export type ApiKeyPermission =
   | 'read:positions'
   | 'read:orders'
   | 'read:trades'
+  | 'read:market'
+  | 'read:risk'
+  | 'read:audit'
+  | 'read:keys'
+  | 'read:ws'
   | 'write:orders'
   | 'write:positions'
   | 'read:strategies'
   | 'write:strategies'
   | 'read:backtest'
   | 'write:backtest'
+  | 'write:keys'
   | 'admin';
 
 /** All available permissions */
@@ -27,12 +33,18 @@ export const ALL_PERMISSIONS: ApiKeyPermission[] = [
   'read:positions',
   'read:orders',
   'read:trades',
+  'read:market',
+  'read:risk',
+  'read:audit',
+  'read:keys',
+  'read:ws',
   'write:orders',
   'write:positions',
   'read:strategies',
   'write:strategies',
   'read:backtest',
   'write:backtest',
+  'write:keys',
   'admin',
 ];
 
@@ -43,6 +55,9 @@ export const PERMISSION_GROUPS = {
     'read:positions',
     'read:orders',
     'read:trades',
+    'read:market',
+    'read:risk',
+    'read:ws',
     'read:strategies',
     'read:backtest',
   ] as ApiKeyPermission[],
@@ -51,6 +66,9 @@ export const PERMISSION_GROUPS = {
     'read:positions',
     'read:orders',
     'read:trades',
+    'read:market',
+    'read:risk',
+    'read:ws',
     'write:orders',
     'write:positions',
   ] as ApiKeyPermission[],
@@ -193,7 +211,12 @@ export class ApiKeyManager {
       return { valid: false, error: 'API key has expired' };
     }
 
-    if (requiredPermission && !record.permissions.includes(requiredPermission)) {
+    // Treat `admin` as a wildcard permission.
+    if (
+      requiredPermission &&
+      !record.permissions.includes(requiredPermission) &&
+      !record.permissions.includes('admin')
+    ) {
       return { valid: false, error: `Missing permission: ${requiredPermission}` };
     }
 

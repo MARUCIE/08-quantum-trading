@@ -7,7 +7,16 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
+import { URL } from 'url';
 import { BinanceWebSocket } from '../data/binance-ws.js';
+import {
+  authenticateApiKey,
+  checkIpWhitelist,
+  getApiAuthMode,
+  hasPermission,
+  type AuthResult,
+} from '../api/middleware/api-key-auth.js';
+import type { ApiKeyPermission, ApiKeyRecord } from '../auth/index.js';
 import { metrics } from '../metrics/index.js';
 import type { KlineInterval } from '../types/market.js';
 
@@ -45,9 +54,19 @@ interface ClientState {
   id: string;
   ws: WebSocket;
   subscriptions: Set<string>;
+  apiKey?: ApiKeyRecord;
   connectedAt: number;
   lastPing: number;
 }
+
+const WS_CHANNEL_PERMISSIONS: Record<string, ApiKeyPermission> = {
+  ticker: 'read:market',
+  kline: 'read:market',
+  trade: 'read:market',
+  orderbook: 'read:market',
+  portfolio: 'read:account',
+  risk: 'read:risk',
+};
 
 export class QuantumWsServer {
   private wss: WebSocketServer | null = null;
@@ -105,11 +124,19 @@ export class QuantumWsServer {
   private handleConnection(ws: WebSocket, req: IncomingMessage): void {
     const clientId = `client_${++this.clientIdCounter}_${Date.now()}`;
     const clientIp = req.socket.remoteAddress || 'unknown';
+    const authResult = this.authenticateConnection(req, clientIp);
+
+    if (!authResult.authenticated) {
+      this.sendError(ws, authResult.error || 'Authentication failed', 'WS_AUTH_REQUIRED');
+      ws.close(4401, 'Unauthorized');
+      return;
+    }
 
     const client: ClientState = {
       id: clientId,
       ws,
       subscriptions: new Set(),
+      apiKey: authResult.apiKey,
       connectedAt: Date.now(),
       lastPing: Date.now(),
     };
@@ -171,6 +198,27 @@ export class QuantumWsServer {
    */
   private handleSubscribe(client: ClientState, message: WsSubscribeMessage): void {
     const { channel, symbol, interval } = message;
+    const requiredPermission = WS_CHANNEL_PERMISSIONS[channel];
+    if (!requiredPermission) {
+      this.sendError(client.ws, `Unsupported subscription channel: ${channel}`, 'WS_CHANNEL_UNSUPPORTED');
+      return;
+    }
+
+    if (getApiAuthMode() !== 'off') {
+      if (!client.apiKey) {
+        this.sendError(client.ws, 'WebSocket authentication is required', 'WS_AUTH_REQUIRED');
+        return;
+      }
+      if (!hasPermission(client.apiKey, requiredPermission)) {
+        this.sendError(
+          client.ws,
+          `Missing permission for channel ${channel}: ${requiredPermission}`,
+          'WS_FORBIDDEN'
+        );
+        return;
+      }
+    }
+
     const subscriptionKey = this.getSubscriptionKey(channel, symbol, interval);
 
     // Add to client subscriptions
@@ -334,13 +382,79 @@ export class QuantumWsServer {
   /**
    * Send error to client
    */
-  private sendError(ws: WebSocket, error: string): void {
+  private sendError(ws: WebSocket, error: string, code: string = 'WS_ERROR'): void {
     this.send(ws, {
       type: 'error',
       channel: 'system',
-      data: { error },
+      data: {
+        message: error,
+        error,
+        code,
+      },
       timestamp: Date.now(),
     });
+  }
+
+  /**
+   * Authenticate a WebSocket connection.
+   *
+   * Browser clients pass `?token=<api-key>` in the WS URL.
+   * Non-browser clients may still use Authorization / X-API-Key headers.
+   */
+  private authenticateConnection(req: IncomingMessage, clientIp: string): AuthResult {
+    if (getApiAuthMode() === 'off') {
+      return { authenticated: true };
+    }
+
+    const token = this.extractWsToken(req);
+    if (!token) {
+      return {
+        authenticated: false,
+        error: 'WebSocket token required. Provide ?token=<api-key> in WS URL.',
+      };
+    }
+
+    const auth = authenticateApiKey(token, 'read:ws');
+    if (!auth.authenticated) {
+      return auth;
+    }
+
+    if (auth.apiKey && !checkIpWhitelist(auth.apiKey, clientIp)) {
+      return {
+        authenticated: false,
+        error: 'IP address not in whitelist',
+      };
+    }
+
+    return auth;
+  }
+
+  /**
+   * Extract WS token from URL query first, then fallback to auth headers.
+   */
+  private extractWsToken(req: IncomingMessage): string | null {
+    const requestUrl = req.url || '/';
+    try {
+      const parsed = new URL(requestUrl, 'ws://localhost');
+      const token = parsed.searchParams.get('token') || parsed.searchParams.get('api_key');
+      if (token) {
+        return token;
+      }
+    } catch {
+      // Ignore malformed URL and fallback to headers.
+    }
+
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      return authHeader.substring(7);
+    }
+
+    const apiKeyHeader = req.headers['x-api-key'];
+    if (typeof apiKeyHeader === 'string') {
+      return apiKeyHeader;
+    }
+
+    return null;
   }
 
   /**

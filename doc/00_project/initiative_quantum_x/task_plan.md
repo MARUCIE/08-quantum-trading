@@ -3,7 +3,7 @@ Title: Task Plan - initiative_quantum_x
 Scope: project
 Owner: ai-agent
 Status: active
-LastUpdated: 2026-01-28
+LastUpdated: 2026-02-12
 Related:
   - /doc/00_project/initiative_quantum_x/PRD.md
   - /doc/00_project/initiative_quantum_x/SYSTEM_ARCHITECTURE.md
@@ -334,3 +334,107 @@ Output
 - 2026-01-28: Implemented account store + API + UI (accounts page + switcher), added sim/real gating and OpenAPI updates, fixed paper-service price refresh, updated trading store tests.
 - 2026-01-28: UI/UX SOP for `/accounts` (spacing aligned to `space-y-6`, single primary action), Playwright evidence run (chromium) pass.
 - 2026-01-28: Network check passed (frontend + API), added market endpoint graceful fallback to avoid 5xx on upstream 451.
+
+### Completed Actions (2026-02-11)
+- [x] 执行 SOP 3.2（Run `3-2-3e7747bd`）并落盘证据到 `outputs/sop-febe-consistency-entrypoint/run-20260211-215947/`
+- [x] 前后端错误契约对齐：前端改为抛 `ApiClientError`；后端 `Invalid JSON` 统一返回 400 + `INVALID_JSON`
+- [x] 前端入口补齐：sidebar/mobile-nav 增加 `/api-keys`、`/audit`、`/notifications`、`/preferences`、`/mobile`
+- [x] CLI 入口对齐：`Makefile` 服务名统一为 `backend/frontend`，移除无效 `db` 直连动作
+- [x] 执行 SOP 3.6（Run `3-6-24bbbefa`）：定义 3 类 persona 脚本并完成非生产真实流程测试
+- [x] 问题修复与复测：端口冲突修复后，persona 流程串行 3/3、并行 3/3、全浏览器矩阵 15/15 全通过
+- [x] 文档同步：已更新 `USER_EXPERIENCE_MAP.md` 与 `PRD.md` 的 persona 验收结果
+- [x] 收尾校验：`ai check` 通过（`/Users/mauricewen/AI-tools/outputs/check/20260211-145104-e60b72e1`）
+- [x] 执行 SOP 1.4（Run `1-4-2bc405e8`）：完成架构圆桌 Council（Architect/Security/SRE）并产出 ADR 与风险清单
+- [x] 结构化预检：关键入口文件 12、前端路由 48、后端 API 42，证据已落盘到 `outputs/sop-architecture-council/1-4-2bc405e8/reports/`
+- [x] 架构同步：已更新 `SYSTEM_ARCHITECTURE.md` 并链接 `ARCHITECTURE_ADR_2026-02-11.md` / `ARCHITECTURE_RISK_REGISTER_2026-02-11.md`
+- [x] DoD 验证：Round 1 `ai check` 通过（`20260211-150613-a3b42d96`），Round 2 UX Map 模拟测试通过（persona `3/3`）
+- [x] 执行 SOP 1.11（Run `1-11-7012f820`）：完成全局沙盒化策略落地（本地隔离 + 云探测 + 任务映射）
+- [x] 沙盒证据：离线网络封锁、只读文件系统、离线 typecheck 均已验证并落盘到 `outputs/sop-global-sandbox/1-11-7012f820/logs/`
+- [x] 安全与架构同步：更新 `SYSTEM_ARCHITECTURE.md` 与 `SANDBOX_SECURITY_STATEMENT.md`，并同步 PRD/UX/优化计划/滚动台账
+- [x] DoD 验证：Round 1 `ai check` 通过（`20260211-152905-e74d2e33`），Round 2 UX Map 模拟测试通过（persona `3/3`）
+- [x] 执行 SOP 1.11 复核（Run `1-11-55189353`）：完成结构化入口预检（前端页面 50、后端 API 42）并落盘证据目录 `outputs/1.11/1-11-55189353/`
+- [x] 沙盒脚本强化：`run_local_sandbox.sh` 新增能力降级、配额覆盖、超时标准码 `124`、`*.meta` 策略元数据落盘
+- [x] 复核证据：网络封锁、只读写入拦截、超时终止、离线 `backend typecheck` 已验证（见 `outputs/1.11/1-11-55189353/reports/sandbox_execution_evidence.md`）
+- [x] DoD 验证：Round 1 `ai check` 通过（`20260211-154100-5a6c5a01`），Round 2 UX Map 导航冒烟通过（`frontend/e2e/navigation.spec.ts`，10/10）
+- [x] Run 收尾：SOP 状态完成并落盘（`outputs/1.11/1-11-55189353/logs/sop_status.log`）
+- [x] Run 收尾：SOP 状态完成并落盘（`outputs/sop-global-sandbox/1-11-7012f820/logs/sop_status_after_fix.log`）
+- [x] 一致性修复：主文档统一到基线 run `1-11-7012f820`，并补齐超时探针证据（`outputs/sop-global-sandbox/1-11-7012f820/logs/20260211-233416_strict_offline.log`）
+- [x] 执行 SOP 3.7（Run `3-7-f72886eb`）：完成功能闭环检查（入口/系统/契约/验证）并落盘到 `outputs/sop-full-loop/3-7-f72886eb/`
+- [x] 入口闭环：UI 路由/导航、Makefile CLI、配置入口核对完成；`.env.example` 补齐 10 个缺失变量并回归为 0 差异
+- [x] 系统闭环：真实链路验证通过（账户创建 -> 激活回显 -> 存储落盘），错误路径 400/404 可追踪
+- [x] 契约闭环：新增前后端契约测试并通过；OpenAPI 与后端路由对齐为 0 差异
+- [x] 验证闭环：新增 `frontend/e2e/full-loop-closure.spec.ts` 并通过（3/3，chromium，非生产 `API_AUTH_MODE=off`）
+- [x] 收尾校验：`ai check` 通过（`/Users/mauricewen/AI-tools/outputs/check/20260211-155950-7c50d2c4`）
+
+## SOP 1.6 (2026-02-12)
+- Run ID: `1-6-f056f6f5`
+- Objective: API contract + auth boundary sync (REST + WS + schema + callers + tests)
+- Deliverables:
+  - `outputs/1.6/1-6-f056f6f5/reports/final_report.md`
+  - `outputs/1.6/1-6-f056f6f5/diff/api-contract-auth-sync.patch`
+- Validation:
+  - Round1 `ai check` PASS: `/Users/mauricewen/AI-tools/outputs/check/20260211-160128-e1d8a290`
+  - Round2 UX smoke PASS: `outputs/1.6/1-6-f056f6f5/logs/ux-round2-navigation.log`
+
+## SOP 1.3 (2026-02-11)
+- Run ID: `1-3-915e27e6`
+- Objective: multi-role brainstorm（PM/Designer/SEO）并同步 PRD/UX/Architecture/Optimization 一致性
+- Deliverables:
+  - `outputs/1.3/1-3-915e27e6/reports/council_role_outputs.md`
+  - `outputs/1.3/1-3-915e27e6/reports/conflicts_consistency_decisions.md`
+  - `outputs/1.3/1-3-915e27e6/reports/seo_sitemap_keywords.md`
+- Validation:
+  - 文档一致性已同步：`PRD.md` / `USER_EXPERIENCE_MAP.md` / `SYSTEM_ARCHITECTURE.md` / `PLATFORM_OPTIMIZATION_PLAN.md`
+  - Round1 `ai check` PASS: `/Users/mauricewen/AI-tools/outputs/check/20260211-161613-fbcd92a0`
+  - Round2 UX smoke PASS: `outputs/1.3/1-3-915e27e6/logs/ux_round2_navigation.log`
+
+## SOP 1.3 Continue (2026-02-11)
+- Run ID: `1-3-826a518f`
+- Objective: 将 SEO 分层策略落地为运行时实现（public pages + sitemap + robots + app default noindex）
+- Deliverables:
+  - `outputs/1.3/1-3-826a518f/reports/seo_implementation_report.md`
+  - `frontend/src/lib/seo/public-routes.ts`
+  - `frontend/src/app/sitemap.ts`
+  - `frontend/src/app/robots.ts`
+  - `frontend/src/components/layout/root-shell.tsx`
+  - `frontend/src/components/layout/public-header.tsx`
+- Validation:
+  - Frontend build PASS: `outputs/1.3/1-3-826a518f/logs/frontend_build.log`
+  - Round2 UX smoke PASS: `outputs/1.3/1-3-826a518f/logs/ux_round2_navigation.log`
+
+## SOP 1.3 Continue v2 (2026-02-12)
+- Run ID: `1-3-a7270c8c`
+- Objective: 补齐 remaining public 页面的 metadata/JSON-LD，并新增 `public-routes -> sitemap -> robots` 一致性回归测试。
+- Deliverables:
+  - `outputs/1.3/1-3-a7270c8c/reports/final_report.md`
+  - `outputs/1.3/1-3-a7270c8c/reports/seo_runtime_v2_report.md`
+  - `frontend/src/lib/seo/seo-runtime.test.ts`
+  - `frontend/src/app/features/*`
+  - `frontend/src/app/docs/*`
+- Validation:
+  - SEO regression tests PASS: `outputs/1.3/1-3-a7270c8c/logs/vitest_seo_runtime.log`
+  - Frontend build PASS: `outputs/1.3/1-3-a7270c8c/logs/frontend_build.log`
+  - Round2 UX smoke PASS: `outputs/1.3/1-3-a7270c8c/logs/playwright_navigation.log`
+  - Round1 `ai check` PASS: `/Users/mauricewen/AI-tools/outputs/check/20260212-015057-ece8e40d`
+  - Post-docsync `ai check` PASS: `/Users/mauricewen/AI-tools/outputs/check/20260212-015616-5dab5d84`
+
+## SOP Hygiene Cleanup (2026-02-12)
+- Objective: 清理 run 悬挂与 rolling ledger 编号冲突，保证 SOP 台账可审计。
+- Actions:
+  - 修正 `ROLLING_REQUIREMENTS_AND_PROMPTS.md` Provider HTTP 区块编号冲突：
+    - `REQ-036` / `PRM-035` / `AR-019`
+  - 清理 rolling update 中重复登记，统一改为 canonical 引用，避免同一编号跨层重复占位
+  - 关闭误触发 run：`6-7-224a5fd2` -> `failed`
+  - 证据：`outputs/1.3/1-3-a7270c8c/logs/sop_6_7_cleanup.log`
+  - 编号唯一化检查：`outputs/1.3/1-3-a7270c8c/logs/ledger_id_uniqueness.log`（duplicate IDs 为空）
+  - Post-hygiene `ai check` PASS：`/Users/mauricewen/AI-tools/outputs/check/20260212-020654-9a0352b0`
+  - Post-hygiene docsync `ai check` PASS：`/Users/mauricewen/AI-tools/outputs/check/20260212-020834-016778b8`
+  - Final continue `ai check` PASS：`/Users/mauricewen/AI-tools/outputs/check/20260212-020945-43393f62`
+  - Final wrap-up `ai check` PASS：`/Users/mauricewen/AI-tools/outputs/check/20260212-021041-32bc765a`
+
+## SOP 1.1 Run Plan (2026-02-12)
+- Run ID: `1-1-065abd2c`
+- Status: In Progress
+- Plan-first artifact: `outputs/1.1/1-1-065abd2c/reports/plan_first.md`
+- Ralph loop state: `.codex/ralph-loop.local.md`
+- Evidence root: `outputs/1.1/1-1-065abd2c/`

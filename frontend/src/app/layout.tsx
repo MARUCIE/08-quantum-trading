@@ -1,10 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import { DynamicSidebar } from "@/components/layout/dynamic-sidebar";
-import { Header } from "@/components/layout/header";
 import { SkipLink } from "@/components/layout/skip-link";
+import { RootShell } from "@/components/layout/root-shell";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -18,20 +16,21 @@ export const viewport: Viewport = {
   ],
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Quantum X - AI Quantitative Trading Platform",
+  title: {
+    default: "Quantum X - AI Quantitative Trading Platform",
+    template: "%s | Quantum X",
+  },
   description:
     "Professional-grade quantitative trading platform with AI-powered strategies",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default async function RootLayout({
@@ -45,25 +44,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             <SkipLink />
-            <div className="flex h-dvh overflow-hidden">
-              <DynamicSidebar />
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <Header />
-                <main
-                  id="main-content"
-                  className="flex-1 overflow-auto bg-background p-4 md:p-6 custom-scrollbar"
-                  tabIndex={-1}
-                >
-                  {children}
-                </main>
-              </div>
-            </div>
+            <RootShell>{children}</RootShell>
           </Providers>
         </NextIntlClientProvider>
       </body>

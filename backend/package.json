@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "load-test": "tsx scripts/load-test.ts",
     "load-test:health": "tsx scripts/load-test.ts /api/health 50 500",
-    "load-test:portfolio": "tsx scripts/load-test.ts /api/portfolio 20 200"
+    "load-test:portfolio": "tsx scripts/load-test.ts /api/portfolio/stats 20 200"
   },
   "dependencies": {
     "ws": "^8.18.0",

@@ -49,6 +49,7 @@ import {
   ChevronDown,
   ChevronRight,
   TrendingUp,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -151,6 +152,8 @@ const navGroups: NavGroup[] = [
       { key: "config", href: "/config", icon: Server },
       { key: "infrastructure", href: "/infrastructure", icon: Globe },
       { key: "monitoring", href: "/monitoring", icon: Activity },
+      { key: "apiKeys", href: "/api-keys", icon: Key },
+      { key: "auditLog", href: "/audit", icon: FileText },
       { key: "dashboardBuilder", href: "/dashboard-builder", icon: LayoutGrid },
     ],
   },
@@ -158,6 +161,9 @@ const navGroups: NavGroup[] = [
 
 const secondaryNavigation: NavItem[] = [
   { key: "alerts", href: "/alerts", icon: Bell },
+  { key: "notifications", href: "/notifications", icon: Bell },
+  { key: "preferences", href: "/preferences", icon: SlidersHorizontal },
+  { key: "mobile", href: "/mobile", icon: Smartphone },
   { key: "settings", href: "/settings", icon: Settings },
 ];
 

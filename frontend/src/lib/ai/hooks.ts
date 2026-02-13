@@ -15,6 +15,11 @@ import type {
   MarketSentimentRequest,
   MarketSentimentResponse,
 } from './types';
+import {
+  extractAiErrorMessage,
+  requestAi,
+  requestAiJson,
+} from './http';
 
 // Chat message type
 interface ChatMessage {
@@ -59,7 +64,7 @@ export function useAIChat() {
           // Streaming request
           abortControllerRef.current = new AbortController();
 
-          const response = await fetch('/api/ai/chat', {
+          const response = await requestAi('chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, history, stream: true }),
@@ -67,7 +72,7 @@ export function useAIChat() {
           });
 
           if (!response.ok) {
-            throw new Error(`Request failed: ${response.status}`);
+            throw new Error(await extractAiErrorMessage(response));
           }
 
           const reader = response.body?.getReader();
@@ -90,17 +95,20 @@ export function useAIChat() {
                 const data = line.slice(6).trim();
                 if (data === '[DONE]') continue;
 
+                let parsed: { content?: string; error?: string } | null = null;
                 try {
-                  const parsed = JSON.parse(data);
-                  if (parsed.content) {
-                    fullContent += parsed.content;
-                    setStreamingContent(fullContent);
-                  }
-                  if (parsed.error) {
-                    throw new Error(parsed.error);
-                  }
+                  parsed = JSON.parse(data) as { content?: string; error?: string };
                 } catch {
                   // Skip invalid JSON
+                  continue;
+                }
+
+                if (parsed?.error) {
+                  throw new Error(parsed.error);
+                }
+                if (parsed?.content) {
+                  fullContent += parsed.content;
+                  setStreamingContent(fullContent);
                 }
               }
             }
@@ -116,17 +124,10 @@ export function useAIChat() {
           setStreamingContent('');
         } else {
           // Non-streaming request
-          const response = await fetch('/api/ai/chat', {
+          const data = await requestAiJson<{ content: string }>('chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, history, stream: false }),
           });
-
-          if (!response.ok) {
-            throw new Error(`Request failed: ${response.status}`);
-          }
-
-          const data = await response.json();
 
           const assistantMessage: ChatMessage = {
             role: 'assistant',
@@ -184,18 +185,10 @@ export function useSignalAnalysis() {
     setError(null);
 
     try {
-      const response = await fetch('/api/ai/signal', {
+      const data = await requestAiJson<SignalAnalysisResponse>('signal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || `Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
       setResult(data);
       return data;
     } catch (err) {
@@ -223,18 +216,10 @@ export function useStrategyAnalysis() {
     setError(null);
 
     try {
-      const response = await fetch('/api/ai/strategy', {
+      const data = await requestAiJson<StrategyAnalysisResponse>('strategy', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || `Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
       setResult(data);
       return data;
     } catch (err) {
@@ -262,18 +247,10 @@ export function useMarketSentiment() {
     setError(null);
 
     try {
-      const response = await fetch('/api/ai/sentiment', {
+      const data = await requestAiJson<MarketSentimentResponse>('sentiment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || `Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
       setResult(data);
       return data;
     } catch (err) {
@@ -308,13 +285,14 @@ export function useAIStatus() {
     setError(null);
 
     try {
-      const response = await fetch('/api/ai/status');
-
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await requestAiJson<{
+        providers: Array<{
+          provider: string;
+          priority: number;
+          available: boolean;
+          failureCount: number;
+        }>;
+      }>('status');
       setStatus(data.providers);
       return data.providers;
     } catch (err) {
@@ -331,13 +309,14 @@ export function useAIStatus() {
     setError(null);
 
     try {
-      const response = await fetch('/api/ai/status', { method: 'POST' });
-
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await requestAiJson<{
+        providers: Array<{
+          provider: string;
+          priority: number;
+          available: boolean;
+          failureCount: number;
+        }>;
+      }>('status', { method: 'POST' });
       setStatus(data.providers);
       return data.providers;
     } catch (err) {

@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { apiClient } from "@/lib/api/client";
 
 // Types
 interface ApiKeyRecord {
@@ -74,6 +75,16 @@ interface PermissionGroups {
   admin: string[];
 }
 
+interface KeysResponse {
+  keys: ApiKeyRecord[];
+  stats: KeyStats | null;
+}
+
+interface PermissionsResponse {
+  all: string[];
+  groups: PermissionGroups | null;
+}
+
 // Moved inside component to use translations
 
 export default function ApiKeysPage() {
@@ -103,13 +114,10 @@ export default function ApiKeysPage() {
   const [expiry, setExpiry] = useState("30d");
   const [rateLimit, setRateLimit] = useState("60");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
   // Fetch keys
   const fetchKeys = useCallback(async () => {
     try {
-      const response = await fetch(`${apiUrl}/keys`);
-      const data = await response.json();
+      const data = await apiClient.get<KeysResponse>("/keys");
       setKeys(data.keys || []);
       setStats(data.stats || null);
     } catch (error) {
@@ -117,19 +125,18 @@ export default function ApiKeysPage() {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, []);
 
   // Fetch permissions
   const fetchPermissions = useCallback(async () => {
     try {
-      const response = await fetch(`${apiUrl}/keys/permissions`);
-      const data = await response.json();
+      const data = await apiClient.get<PermissionsResponse>("/keys/permissions");
       setAllPermissions(data.all || []);
       setPermissionGroups(data.groups || null);
     } catch (error) {
       console.error("Failed to fetch permissions:", error);
     }
-  }, [apiUrl]);
+  }, []);
 
   useEffect(() => {
     fetchKeys();
@@ -146,29 +153,19 @@ export default function ApiKeysPage() {
       const expiryOption = EXPIRY_OPTIONS.find((e) => e.value === expiry);
       const expiresIn = expiryOption?.ms || null;
 
-      const response = await fetch(`${apiUrl}/keys`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: keyName.trim(),
-          permissions,
-          expiresIn,
-          rateLimit: parseInt(rateLimit, 10) || 60,
-        }),
+      const data = await apiClient.post<ApiKeyCreateResult>("/keys", {
+        name: keyName.trim(),
+        permissions,
+        expiresIn,
+        rateLimit: parseInt(rateLimit, 10) || 60,
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        setNewlyCreatedKey(data);
-        setShowCreateForm(false);
-        setKeyName("");
-        setPermissionGroup("readonly");
-        setExpiry("30d");
-        setRateLimit("60");
-        fetchKeys();
-      } else {
-        console.error("Failed to create key:", data.error);
-      }
+      setNewlyCreatedKey(data);
+      setShowCreateForm(false);
+      setKeyName("");
+      setPermissionGroup("readonly");
+      setExpiry("30d");
+      setRateLimit("60");
+      fetchKeys();
     } catch (error) {
       console.error("Failed to create key:", error);
     } finally {
@@ -179,15 +176,10 @@ export default function ApiKeysPage() {
   // Toggle key active status
   const handleToggleKey = async (id: string, currentActive: boolean) => {
     try {
-      const response = await fetch(`${apiUrl}/keys/${id}/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active: !currentActive }),
+      await apiClient.post(`/keys/${id}/toggle`, {
+        active: !currentActive,
       });
-
-      if (response.ok) {
-        fetchKeys();
-      }
+      fetchKeys();
     } catch (error) {
       console.error("Failed to toggle key:", error);
     }
@@ -200,13 +192,8 @@ export default function ApiKeysPage() {
     }
 
     try {
-      const response = await fetch(`${apiUrl}/keys/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        fetchKeys();
-      }
+      await apiClient.delete(`/keys/${id}`);
+      fetchKeys();
     } catch (error) {
       console.error("Failed to revoke key:", error);
     }
