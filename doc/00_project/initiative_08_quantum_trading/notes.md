@@ -939,7 +939,7 @@ Related:
 
 ## Tri-end Consistency (Local / GitHub / VPS) (2026-02-13)
 
-- Local HEAD: `9a0345a14b456d6254500310717416dd232e8be2`
+- Local HEAD: `d9b39e2dac987f3b9e337a00b29730ad95ba7e53`
 - GitHub `origin/master`: synced to the same SHA (after push).
 - VPS/production: N/A (no host/SSH or artifact digest provided in this run).
 
@@ -947,3 +947,9 @@ Evidence:
 - `outputs/5.1/5-1-7ca0f855/logs/tri_end_consistency_git.txt`
 - `outputs/5.1/5-1-7ca0f855/logs/git_push_origin_master.log`
 - `outputs/5.1/5-1-7ca0f855/logs/tri_end_consistency_git_after_push.txt`
+
+
+## SOP 5.2 Release & Version Governance (2026-02-13, run `5-2-571b453c`)
+
+- Release version: `release-20260213` (d9b39e2dac987f3b9e337a00b29730ad95ba7e53)
+- Evidence: `outputs/5.2/5-2-571b453c/reports/step3_release_version_and_rollback.md`

@@ -39,14 +39,17 @@ Related:
 | D25 | SOP 3.5 智能体评测与回归 | tasks/graders/outcomes 定义完成；评测执行 PASS；回归用例补齐 | agent-eval plan + tasks/graders + summary + final report | `outputs/3.5/3-5-42693ec1/reports/final_report.md` |
 | D26 | SOP 4.1 项目级全链路回归（UX Map + E2E） | 全链路回归完成；Round1 `ai check` PASS；Round2 UX Map 模拟 PASS；flake/噪音治理完成 | blocker scan + doc sync + round1/round2 logs + screenshots | `outputs/4.1/4-1-67d46392/reports/step6_round1_round2.md` |
 | D27 | SOP 5.1 联合验收与发布守门（重跑） | 联合验收报告完成；Round1 `ai check` PASS；Round2 UX Map 模拟 PASS；SOP run 关单 | joint acceptance + round1 log + round2 log/screenshots + final sop status | `outputs/5.1/5-1-7ca0f855/reports/final_report.md` |
+| D28 | SOP 5.2 发布与版本治理 | Round1 `ai check` PASS；Round2 UX Map PASS；记录版本/tag 与回滚方案并推送 tag | round1/round2 logs + release version/rollback + tag push log | `outputs/5.2/5-2-571b453c/reports/step3_release_version_and_rollback.md` |
 
 # Release/Deployment Notes (if applicable)
+- release version: `release-20260213` (d9b39e2dac987f3b9e337a00b29730ad95ba7e53)
 - rollout strategy: N/A
 - rollback steps: `git revert <sha>` (if needed)
 - monitoring: N/A
-- tri-end consistency: local==GitHub at `9a0345a14b456d6254500310717416dd232e8be2`; VPS N/A (no access)
+- tri-end consistency: local==GitHub at `d9b39e2dac987f3b9e337a00b29730ad95ba7e53`; VPS N/A (no access)
 
 ## Changelog
+- 2026-02-13: added D28 for SOP 5.2 release/version governance (`5-2-571b453c`).
 - 2026-02-13: added D27 for SOP 5.1 rerun joint acceptance gate (`5-1-7ca0f855`).
 - 2026-02-13: added D26 for SOP 4.1 full-chain regression (`4-1-67d46392`).
 - 2026-02-13: updated D23 for SOP 3.8 local docker compose verification (`3-8-384dee2c`).
