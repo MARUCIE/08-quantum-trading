@@ -41,9 +41,10 @@ Related:
 | D27 | SOP 5.1 联合验收与发布守门（重跑） | 联合验收报告完成；Round1 `ai check` PASS；Round2 UX Map 模拟 PASS；SOP run 关单 | joint acceptance + round1 log + round2 log/screenshots + final sop status | `outputs/5.1/5-1-7ca0f855/reports/final_report.md` |
 
 # Release/Deployment Notes (if applicable)
-- rollout strategy:
-- rollback steps:
-- monitoring:
+- rollout strategy: N/A
+- rollback steps: `git revert <sha>` (if needed)
+- monitoring: N/A
+- tri-end consistency: local==GitHub at `9a0345a14b456d6254500310717416dd232e8be2`; VPS N/A (no access)
 
 ## Changelog
 - 2026-02-13: added D27 for SOP 5.1 rerun joint acceptance gate (`5-1-7ca0f855`).
