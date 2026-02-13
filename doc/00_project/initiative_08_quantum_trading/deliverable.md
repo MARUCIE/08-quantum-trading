@@ -122,4 +122,4 @@ Related:
 | PDCA 四文档同步 | Partial | SOP 5.1 聚焦联合验收与双轮守门，已同步 planning 台账与 deliverable。 |
 | 底层规范（AGENTS/CLAUDE） | N/A | 无新增跨任务底层守门项。 |
 | Rolling Ledger 更新 | Done | `doc/00_project/initiative_quantum_x/ROLLING_REQUIREMENTS_AND_PROMPTS.md`（REQ-044/PRM-043/AR-028） |
-| 三端一致性（local/GitHub/VPS） | Partial | local 证据已核对；GitHub/VPS 缺少 artifact/SHA 对照入口，记录 N/A。 |
+| 三端一致性（local/GitHub/VPS） | Partial | local==origin/master 已核对（sha: `baefabd630dd8b3de36c35b6bae4756a4f9c9471`）；VPS N/A（缺少入口）。evidence: `outputs/5.1/5-1-b8b7b702/reports/tri_end_consistency_20260213T025134Z.md` |
