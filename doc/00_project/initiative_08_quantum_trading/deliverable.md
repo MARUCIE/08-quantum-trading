@@ -2,8 +2,8 @@
 Title: Deliverables - initiative_08_quantum_trading
 Scope: project
 Owner: ai-agent
-Status: active
-LastUpdated: 2026-02-12
+Status: completed
+LastUpdated: 2026-02-13
 Related:
   - /doc/00_project/initiative_08_quantum_trading/task_plan.md
   - /doc/00_project/initiative_08_quantum_trading/notes.md
@@ -33,6 +33,10 @@ Related:
 | D19 | SOP 5.3 Postmortem 自动化守门 | pre-release trigger scan 完成且无未修复阻断；post-release PM 更新完成；CI postmortem gate 落地；证据归档与 rolling 更新完成 | trigger-scan report + PM update + CI gate + archive + final closeout | `outputs/5.3/5-3-15802d37/reports/step5_archive.md` |
 | D20 | SOP 5.1 联合验收与发布守门（Queue 模式续跑） | Step1-5 全部完成并关单；Round1 `ai check` PASS；Round2 UX Map 回归 `16/16` PASS；证据链完整 | joint-acceptance report + round1 log + round2 log/screenshots + final sop status | `outputs/5.1/5-1-b8b7b702/reports/final_report.md` |
 | D21 | SOP 4.2 增量 AI Code Review | 变更范围审计 + critical 修复 + ai check 通过；CI gate 关键脚本/配置已纳入版本 | code review report + local CI gates log + ai check log | `outputs/4.2/4-2-9084ccbc/reports/code_review.md` |
+| D22 | SOP 3.3 真实 API + fixtures（非生产验收） | 非生产环境通过真实网络 API 跑通核心行情路径；fixtures 可复现；验收声明禁止 mock 替代 | step2 capture log + fixtures report + acceptance statement + backend typecheck/tests | `outputs/3.3/3-3-74963f76/` |
+| D23 | SOP 3.8 本地 Docker 跑通验证 | Docker/Compose 启动最小链路成功；核心路径（创建模拟账户->下单->回显）通过；记录失败原因与修复 | compose up log + core path smoke + final report | `outputs/3.8/3-8-384dee2c/reports/final_report.md` |
+| D24 | SOP 3.4 Reliability & Fault Drill | 失败路径识别完成；降级/幂等/恢复策略落盘；故障演练与回归测试通过 | failure paths + drill report + regression tests | `outputs/3.4/3-4-3c23029a/reports/step4_regression_tests.md` |
+| D25 | SOP 3.5 智能体评测与回归 | tasks/graders/outcomes 定义完成；评测执行 PASS；回归用例补齐 | agent-eval plan + tasks/graders + summary + final report | `outputs/3.5/3-5-42693ec1/reports/final_report.md` |
 
 # Release/Deployment Notes (if applicable)
 - rollout strategy:
@@ -40,6 +44,10 @@ Related:
 - monitoring:
 
 ## Changelog
+- 2026-02-13: updated D23 for SOP 3.8 local docker compose verification (`3-8-384dee2c`).
+- 2026-02-13: added D24 for SOP 3.4 reliability & fault drill deliverables (`3-4-3c23029a`).
+- 2026-02-13: added D25 for SOP 3.5 agent eval regression deliverables (`3-5-42693ec1`).
+- 2026-02-13: added D22 for SOP 3.3 real API + fixtures deliverables (`3-3-74963f76`).
 - 2026-02-11: initialized. (reason: planning-with-files)
 - 2026-02-11: added D2 for SOP 1.4 architecture council deliverables.
 - 2026-02-11: added D3 for SOP 1.11 global sandbox deliverables.

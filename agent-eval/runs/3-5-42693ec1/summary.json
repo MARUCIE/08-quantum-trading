@@ -1,0 +1,89 @@
+{
+  "ok": true,
+  "run_id": "3-5-42693ec1",
+  "project_dir": "/Users/mauricewen/Projects/08-quantum-trading",
+  "module_dir": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval",
+  "total": 7,
+  "passed": 7,
+  "failed": 0,
+  "pending": 0,
+  "results": [
+    {
+      "task_id": "backend_npm_ci",
+      "command": "bash -lc 'set -euo pipefail; cd backend; npm ci 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/backend_npm_ci.log'",
+      "exit_code": 0,
+      "duration_sec": 2.64,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/backend_npm_ci.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/backend_npm_ci.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/backend_npm_ci.json",
+      "ok": true,
+      "pending": false
+    },
+    {
+      "task_id": "frontend_npm_ci",
+      "command": "bash -lc 'set -euo pipefail; cd frontend; npm ci 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/frontend_npm_ci.log'",
+      "exit_code": 0,
+      "duration_sec": 11.44,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/frontend_npm_ci.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/frontend_npm_ci.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/frontend_npm_ci.json",
+      "ok": true,
+      "pending": false
+    },
+    {
+      "task_id": "backend_vitest",
+      "command": "bash -lc 'set -euo pipefail; cd backend; npm test 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/backend_npm_test.log'",
+      "exit_code": 0,
+      "duration_sec": 3.05,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/backend_vitest.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/backend_vitest.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/backend_vitest.json",
+      "ok": true,
+      "pending": false
+    },
+    {
+      "task_id": "backend_typecheck",
+      "command": "bash -lc 'set -euo pipefail; cd backend; npm run typecheck 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/backend_typecheck.log'",
+      "exit_code": 0,
+      "duration_sec": 1.53,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/backend_typecheck.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/backend_typecheck.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/backend_typecheck.json",
+      "ok": true,
+      "pending": false
+    },
+    {
+      "task_id": "frontend_vitest",
+      "command": "bash -lc 'set -euo pipefail; cd frontend; npm run test:run 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/frontend_vitest.log'",
+      "exit_code": 0,
+      "duration_sec": 5.7,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/frontend_vitest.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/frontend_vitest.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/frontend_vitest.json",
+      "ok": true,
+      "pending": false
+    },
+    {
+      "task_id": "frontend_build",
+      "command": "bash -lc 'set -euo pipefail; cd frontend; npm run build 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/frontend_build.log'",
+      "exit_code": 0,
+      "duration_sec": 14.63,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/frontend_build.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/frontend_build.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/frontend_build.json",
+      "ok": true,
+      "pending": false
+    },
+    {
+      "task_id": "ai_check",
+      "command": "bash -lc 'set -euo pipefail; ai check 2>&1 | tee outputs/3.5/3-5-42693ec1/logs/ai_check.log'",
+      "exit_code": 0,
+      "duration_sec": 15.16,
+      "transcript": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/transcripts/ai_check.jsonl",
+      "outcome": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/outcomes/ai_check.json",
+      "grades": "/Users/mauricewen/Projects/08-quantum-trading/agent-eval/runs/3-5-42693ec1/grades/ai_check.json",
+      "ok": true,
+      "pending": false
+    }
+  ]
+}

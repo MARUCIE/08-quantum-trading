@@ -7,6 +7,7 @@
 import { ApiServer } from './server.js';
 import { createApiRequestGuard } from './auth-policy.js';
 import { BinanceClient } from '../data/binance-client.js';
+import { BlockchainInfoClient } from '../data/blockchain-info-client.js';
 import type { OHLCVBar, Ticker, Trade, KlineInterval } from '../types/market.js';
 import { RiskMonitor } from '../risk/monitor.js';
 import { RiskChecker } from '../risk/checker.js';
@@ -29,6 +30,7 @@ import {
   listPaperTrades,
   submitPaperOrder,
   ensurePaperAccount,
+  UpstreamUnavailableError,
 } from '../execution/paper-service.js';
 import {
   listAccounts,
@@ -46,6 +48,15 @@ import type {
 const binanceClient = new BinanceClient({
   testnet: process.env.BINANCE_TESTNET === 'true',
 });
+
+const blockchainInfoClient = new BlockchainInfoClient();
+
+type MarketDataProvider = 'binance' | 'blockchain_info';
+
+function getMarketDataProvider(): MarketDataProvider {
+  const raw = (process.env.MARKET_DATA_PROVIDER || 'binance').trim().toLowerCase();
+  return raw === 'blockchain_info' ? 'blockchain_info' : 'binance';
+}
 
 // Server start time for uptime calculation
 const serverStartTime = Date.now();
@@ -121,29 +132,38 @@ export function registerRoutes(server: ApiServer): void {
     const checks: Record<string, { status: 'ok' | 'error'; latency?: number; error?: string }> = {};
     let allHealthy = true;
 
-    // Check Binance API connectivity
-    const binanceStart = Date.now();
+    const provider = getMarketDataProvider();
+
+    // Check market data provider connectivity
+    const providerStart = Date.now();
     try {
-      const isHealthy = await binanceClient.ping();
-      checks.binance = {
+      const isHealthy =
+        provider === 'blockchain_info'
+          ? await blockchainInfoClient.ping()
+          : await binanceClient.ping();
+      checks.marketData = {
         status: isHealthy ? 'ok' : 'error',
-        latency: Date.now() - binanceStart,
+        latency: Date.now() - providerStart,
       };
       if (!isHealthy) {
         allHealthy = false;
-        checks.binance.error = 'Binance API not responding';
+        checks.marketData.error =
+          provider === 'blockchain_info'
+            ? 'Blockchain.info API not responding'
+            : 'Binance API not responding';
       }
     } catch (error) {
       allHealthy = false;
-      checks.binance = {
+      checks.marketData = {
         status: 'error',
-        latency: Date.now() - binanceStart,
+        latency: Date.now() - providerStart,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
 
     const response = {
       status: allHealthy ? 'ready' : 'not_ready',
+      marketDataProvider: provider,
       version: VERSION,
       uptime: Date.now() - serverStartTime,
       checks,
@@ -380,6 +400,15 @@ export function registerRoutes(server: ApiServer): void {
 
       server.sendJson(res, 201, order);
     } catch (error) {
+      if (error instanceof UpstreamUnavailableError) {
+        console.error('[API] Order submit upstream unavailable:', error.cause ?? error);
+        server.sendJson(res, 503, {
+          message: error.message,
+          code: 'UPSTREAM_UNAVAILABLE',
+        });
+        return;
+      }
+
       console.error('[API] Order submit error:', error);
       server.sendJson(res, 500, { error: 'Failed to submit order' });
     }
@@ -589,8 +618,13 @@ export function registerRoutes(server: ApiServer): void {
     const symbol = query.get('symbol') || 'BTCUSDT';
     const cacheKey = symbol.toUpperCase();
 
+    const provider = getMarketDataProvider();
+
     try {
-      const ticker = await binanceClient.getTicker(symbol.replace('/', ''));
+      const ticker =
+        provider === 'blockchain_info'
+          ? await blockchainInfoClient.getTicker(symbol)
+          : await binanceClient.getTicker(symbol.replace('/', ''));
       marketCache.ticker.set(cacheKey, ticker);
       server.sendJson(res, 200, ticker);
     } catch (error) {
@@ -606,11 +640,16 @@ export function registerRoutes(server: ApiServer): void {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const provider = getMarketDataProvider();
+
     try {
       const results: Ticker[] = [];
       for (const symbol of symbols) {
         try {
-          const ticker = await binanceClient.getTicker(symbol);
+          const ticker =
+            provider === 'blockchain_info'
+              ? await blockchainInfoClient.getTicker(symbol)
+              : await binanceClient.getTicker(symbol);
           marketCache.ticker.set(symbol.toUpperCase(), ticker);
           results.push(ticker);
         } catch (error) {

@@ -7,9 +7,29 @@
 
 import type { OHLCVBar, Ticker, Trade, KlineInterval, DataQualityMetrics } from '../types/market';
 
-// Binance API endpoints
-const BINANCE_SPOT_REST = 'https://api.binance.com';
-const BINANCE_SPOT_TESTNET_REST = 'https://testnet.binance.vision';
+import { resolveBinanceSpotRestBaseUrl } from './binance-config.js';
+import { metrics } from '../metrics/index.js';
+
+
+async function instrumentedFetch(url: string, endpoint: string): Promise<Response> {
+  const endTimer = metrics.startTimer('binance_api_latency_ms', { endpoint });
+  try {
+    const response = await fetch(url);
+    metrics.incCounter('binance_api_requests_total', {
+      endpoint,
+      status: String(response.status),
+    });
+    return response;
+  } catch (error) {
+    metrics.incCounter('binance_api_requests_total', {
+      endpoint,
+      status: 'fetch_error',
+    });
+    throw error;
+  } finally {
+    endTimer();
+  }
+}
 
 // Response types
 interface BinanceKline extends Array<number | string> {
@@ -56,7 +76,7 @@ export class BinanceClient {
     testnet?: boolean;
   } = {}) {
     this.testnet = options.testnet ?? true;
-    this.baseUrl = this.testnet ? BINANCE_SPOT_TESTNET_REST : BINANCE_SPOT_REST;
+    this.baseUrl = resolveBinanceSpotRestBaseUrl(this.testnet);
   }
 
   /**
@@ -83,7 +103,7 @@ export class BinanceClient {
     if (endTime) params.set('endTime', String(endTime));
 
     const url = `${this.baseUrl}/api/v3/klines?${params}`;
-    const response = await fetch(url);
+    const response = await instrumentedFetch(url, '/api/v3/klines');
 
     if (!response.ok) {
       throw new Error(`Binance API error: ${response.status} ${response.statusText}`);
@@ -120,7 +140,7 @@ export class BinanceClient {
    */
   async getTicker(symbol: string): Promise<Ticker> {
     const url = `${this.baseUrl}/api/v3/ticker/bookTicker?symbol=${symbol.toUpperCase()}`;
-    const response = await fetch(url);
+    const response = await instrumentedFetch(url, '/api/v3/ticker/bookTicker');
 
     if (!response.ok) {
       throw new Error(`Binance API error: ${response.status}`);
@@ -146,7 +166,7 @@ export class BinanceClient {
    */
   async getTrades(symbol: string, limit: number = 100): Promise<Trade[]> {
     const url = `${this.baseUrl}/api/v3/trades?symbol=${symbol.toUpperCase()}&limit=${limit}`;
-    const response = await fetch(url);
+    const response = await instrumentedFetch(url, '/api/v3/trades');
 
     if (!response.ok) {
       throw new Error(`Binance API error: ${response.status}`);
@@ -177,7 +197,7 @@ export class BinanceClient {
    */
   async ping(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/v3/ping`);
+      const response = await instrumentedFetch(`${this.baseUrl}/api/v3/ping`, '/api/v3/ping');
       return response.ok;
     } catch {
       return false;
@@ -188,7 +208,7 @@ export class BinanceClient {
    * Get server time
    */
   async getServerTime(): Promise<number> {
-    const response = await fetch(`${this.baseUrl}/api/v3/time`);
+    const response = await instrumentedFetch(`${this.baseUrl}/api/v3/time`, '/api/v3/time');
     const data = await response.json() as BinanceServerTime;
     return data.serverTime;
   }

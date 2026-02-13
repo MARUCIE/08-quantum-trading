@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # ===== Stage 1: Dependencies (ALL deps for build) =====
 FROM node:20-alpine AS deps
 WORKDIR /app

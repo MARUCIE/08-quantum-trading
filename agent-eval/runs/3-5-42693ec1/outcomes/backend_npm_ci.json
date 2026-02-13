@@ -1,0 +1,12 @@
+{
+  "exit_code": 0,
+  "duration_sec": 2.64,
+  "files": [
+    {
+      "path": "/Users/mauricewen/Projects/08-quantum-trading/outputs/3.5/3-5-42693ec1/logs/backend_npm_ci.log",
+      "exists": true,
+      "sha256": "459f8c755e67c32490c6496500f9a02ca6b802ca45495db3dd6131dab9b52e32",
+      "size": 143
+    }
+  ]
+}

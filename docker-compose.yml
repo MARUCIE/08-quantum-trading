@@ -4,9 +4,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4008}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:4009}
+        NEXT_PUBLIC_API_KEY: ${NEXT_PUBLIC_API_KEY:-}
     container_name: 08-quantum-trading-frontend
     ports:
-      - "3008:3000"
+      - "${HOST_FRONTEND_PORT:-3008}:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4008}
@@ -29,14 +33,19 @@ services:
       dockerfile: Dockerfile
     container_name: 08-quantum-trading-backend
     ports:
-      - "4008:3001"
-      - "4009:3002"
+      - "${HOST_BACKEND_PORT:-4008}:3001"
+      - "${HOST_WS_PORT:-4009}:3002"
     environment:
       - NODE_ENV=production
       - API_PORT=3001
       - WS_PORT=3002
       - API_AUTH_MODE=${API_AUTH_MODE:-required}
       - API_STATIC_KEY=${API_STATIC_KEY:-}
+      - MARKET_DATA_PROVIDER=${MARKET_DATA_PROVIDER:-binance}
+      - BINANCE_TESTNET=${BINANCE_TESTNET:-true}
+      - BINANCE_SPOT_REST_BASE_URL=${BINANCE_SPOT_REST_BASE_URL:-}
+      - ENABLE_WEBSOCKET=${ENABLE_WEBSOCKET:-false}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3008}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]

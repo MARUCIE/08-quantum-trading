@@ -53,8 +53,8 @@ async function main() {
     const ticker = await client.getTicker('BTCUSDT');
     console.log(`BTCUSDT bid/ask: $${ticker.bid.toFixed(2)} / $${ticker.ask.toFixed(2)}`);
   } else {
-    console.log('\nRunning in mock data mode (Binance API unavailable)');
-    console.log('API endpoints will return simulated data');
+    console.log('\nBinance API unavailable; market data will fall back to cached/zero values.');
+    console.log('Hint: set BINANCE_SPOT_REST_BASE_URL=https://data-api.binance.vision or MARKET_DATA_PROVIDER=blockchain_info (BTC only).');
   }
 
   // Initialize WebSocket (optional, for real-time data)

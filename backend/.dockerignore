@@ -37,3 +37,10 @@ CHANGELOG.md
 # Config files not needed in production
 vitest.config.ts
 tsconfig.tsbuildinfo
+
+# Runtime data (never bake local state into images)
+audit
+storage
+data
+*.log
+

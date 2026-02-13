@@ -2,8 +2,8 @@
 Title: Task Plan - initiative_08_quantum_trading
 Scope: project
 Owner: ai-agent
-Status: active
-LastUpdated: 2026-02-12
+Status: completed
+LastUpdated: 2026-02-13
 Related:
   - /doc/00_project/initiative_quantum_x/PRD.md
   - /doc/00_project/initiative_quantum_x/SYSTEM_ARCHITECTURE.md
@@ -1053,3 +1053,100 @@ Related:
 | Step 3 | Done | `outputs/3.6/3-6-62df5dbf/logs/step3_persona_real_flow_e2e.log` |
 | Step 4 | Done | `outputs/3.6/3-6-62df5dbf/reports/step4_summary_and_doc_updates.md` |
 
+## SOP 3.3 Real API + Fixtures (2026-02-13, run `3-3-74963f76`)
+
+### Objective
+- 使用真实 API 在非生产环境执行核心路径，记录请求/响应；基于真实数据生成可复现 fixtures 用于回放与回归测试。
+
+### Evidence Root
+- `outputs/3.3/3-3-74963f76/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/3.3/3-3-74963f76/logs/step1_planning_files_read.log` |
+| Step 2 | Done | `outputs/3.3/3-3-74963f76/logs/step2_real_api_requests.log` |
+| Step 3 | Done | `outputs/3.3/3-3-74963f76/reports/step3_fixtures.md` |
+| Step 4 | Done | `outputs/3.3/3-3-74963f76/reports/step4_real_api_acceptance_statement.md` |
+
+### Verification
+- Backend typecheck: `outputs/3.3/3-3-74963f76/logs/backend_typecheck.log` (PASS)
+- Backend tests: `outputs/3.3/3-3-74963f76/logs/backend_tests.log` (PASS 128/128)
+- ai check: `/Users/mauricewen/AI-tools/outputs/check/20260213-012245-143c0ea7` (PASS, rounds=2)
+
+
+
+
+
+## SOP 3.8 Local Docker Compose Smoke (2026-02-13, run `3-8-9b2c4bbe`)
+
+### Objective
+- 用 Docker/Compose 启动最小可运行链路并验证核心路径（模拟账户->回显），记录请求/响应与失败修复证据。
+
+### Evidence Root
+- `outputs/3.8/3-8-9b2c4bbe/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/3.8/3-8-9b2c4bbe/logs/step1_planning_files_read.log` |
+| Step 2 | Done | `outputs/3.8/3-8-9b2c4bbe/logs/step2_docker_compose_up_success.log` |
+| Step 3 | Done | `outputs/3.8/3-8-9b2c4bbe/logs/step3_core_path.log` |
+| Step 4 | Done | `outputs/3.8/3-8-9b2c4bbe/reports/step4_final_report.md` |
+
+
+### Post-Reconcile Verification
+- SOP engine reconciliation + local gates: `outputs/3.8/3-8-9b2c4bbe/reports/post_reconcile_verification_20260213T020914Z.md`
+
+## SOP 3.4 Reliability & Fault Drill (2026-02-13, run `3-4-3c23029a`)
+
+### Objective
+- 列出关键失败路径与告警条件；设计降级/幂等/恢复策略；执行故障演练并补齐回归测试。
+
+### Evidence Root
+- `outputs/3.4/3-4-3c23029a/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/3.4/3-4-3c23029a/reports/step1_failure_paths.md` |
+| Step 2 | Done | `outputs/3.4/3-4-3c23029a/reports/step2_resilience_strategy.md` |
+| Step 3 | Done | `outputs/3.4/3-4-3c23029a/reports/step3_fault_drill_results.md` |
+| Step 4 | Done | `outputs/3.4/3-4-3c23029a/reports/step4_regression_tests.md` |
+
+
+## SOP 3.5 智能体评测与回归 SOP (2026-02-13, run `3-5-42693ec1`)
+
+### Objective
+- 用 Agent Eval System 定义 tasks/graders/outcomes，并执行评测形成可复用回归基线。
+
+### Evidence Root
+- `outputs/3.5/3-5-42693ec1/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/3.5/3-5-42693ec1/reports/step1_planning_read.md` |
+| Step 2 | Done | `outputs/3.5/3-5-42693ec1/reports/step2_tasks_graders.md` |
+| Step 3 | Done | `outputs/3.5/3-5-42693ec1/reports/final_report.md` |
+
+### Verification
+- Agent eval summary: `agent-eval/runs/3-5-42693ec1/summary.json` (PASS 7/7)
+
+
+
+## SOP 3.8 本地 Docker 跑通验证 SOP (2026-02-13, run `3-8-384dee2c`)
+
+### Objective
+- 用 Docker/Compose 启动最小可运行链路；使用开发者账号验证核心路径；记录失败原因与修复并更新交付台账。
+
+### Evidence Root
+- `outputs/3.8/3-8-384dee2c/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/3.8/3-8-384dee2c/reports/step1_planning_read.md` |
+| Step 2 | Done | `outputs/3.8/3-8-384dee2c/reports/step2_docker_compose_start.md` |
+| Step 3 | Done | `outputs/3.8/3-8-384dee2c/reports/step3_core_path_smoke.md` |
+| Step 4 | Done | `outputs/3.8/3-8-384dee2c/reports/final_report.md` |

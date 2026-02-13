@@ -2,8 +2,8 @@
 Title: Notes - initiative_08_quantum_trading
 Scope: project
 Owner: ai-agent
-Status: active
-LastUpdated: 2026-02-12
+Status: completed
+LastUpdated: 2026-02-13
 Related:
   - /doc/00_project/initiative_08_quantum_trading/task_plan.md
 ---
@@ -858,10 +858,53 @@ Related:
 ## SOP 3.6 Multi-Persona Real Flow (2026-02-12, run `3-6-62df5dbf`)
 
 - Evidence Root: `outputs/3.6/3-6-62df5dbf/`
-- Step1 planning+UX map read: `outputs/3.6/3-6-62df5dbf/logs/step1_planning_files_read.log`
-- Step2 personas+scripts: `outputs/3.6/3-6-62df5dbf/reports/step2_personas_and_scripts.md`
-- Step3 real-flow E2E (PASS): `outputs/3.6/3-6-62df5dbf/logs/step3_persona_real_flow_e2e.log`
-- Step3 screenshots: `outputs/3.6/3-6-62df5dbf/screenshots/persona_real_flow/`
-- Step4 summary+doc updates: `outputs/3.6/3-6-62df5dbf/reports/step4_summary_and_doc_updates.md`
-- Result: persona real-flow (chromium) `3/3 PASS`
+- Step2 scripts: `outputs/3.6/3-6-62df5dbf/reports/step2_personas_and_scripts.md`
+- Step3 log: `outputs/3.6/3-6-62df5dbf/logs/step3_persona_real_flow_e2e.log`
+- Screenshots: `outputs/3.6/3-6-62df5dbf/screenshots/persona_real_flow/`
 
+## SOP 3.3 Real API + Fixtures (2026-02-13, run `3-3-74963f76`)
+
+- Evidence Root: `outputs/3.3/3-3-74963f76/`
+- Step1 planning read: `outputs/3.3/3-3-74963f76/logs/step1_planning_files_read.log`
+- Step2 capture log: `outputs/3.3/3-3-74963f76/logs/step2_real_api_requests.log` (provider `blockchain_info`, HTTP 200s)
+- Fixtures: `outputs/3.3/3-3-74963f76/fixtures/`
+  - `outputs/3.3/3-3-74963f76/fixtures/external_blockchain_info_ticker.json`
+  - `outputs/3.3/3-3-74963f76/fixtures/backend_ready.json`
+  - `outputs/3.3/3-3-74963f76/fixtures/backend_market_ticker_btcusdt.json`
+- Step3 fixtures report: `outputs/3.3/3-3-74963f76/reports/step3_fixtures.md`
+- Step4 acceptance statement: `outputs/3.3/3-3-74963f76/reports/step4_real_api_acceptance_statement.md`
+- Backend typecheck: `outputs/3.3/3-3-74963f76/logs/backend_typecheck.log` (PASS)
+- Backend tests: `outputs/3.3/3-3-74963f76/logs/backend_tests.log` (PASS 128/128)
+- ai check: `/Users/mauricewen/AI-tools/outputs/check/20260213-012245-143c0ea7` (PASS, rounds=2)
+
+## SOP 3.8 Local Docker Compose Smoke (2026-02-13, run `3-8-9b2c4bbe`)
+
+- Evidence Root: `outputs/3.8/3-8-9b2c4bbe/`
+- Step2 compose up log + snapshots: `outputs/3.8/3-8-9b2c4bbe/logs/step2_docker_compose_up_success.log`
+- Core path log (dev key): `outputs/3.8/3-8-9b2c4bbe/logs/step3_core_path.log`
+- Final report: `outputs/3.8/3-8-9b2c4bbe/reports/step4_final_report.md`
+- Post-reconcile verification: `outputs/3.8/3-8-9b2c4bbe/reports/post_reconcile_verification_20260213T020914Z.md`
+
+## SOP 3.4 Reliability & Fault Drill (2026-02-13, run `3-4-3c23029a`)
+
+- Evidence Root: `outputs/3.4/3-4-3c23029a/`
+- Step1: `outputs/3.4/3-4-3c23029a/reports/step1_failure_paths.md`
+- Step2: `outputs/3.4/3-4-3c23029a/reports/step2_resilience_strategy.md`
+- Step3 drill report: `outputs/3.4/3-4-3c23029a/reports/step3_fault_drill_results.md`
+- Step4 tests report: `outputs/3.4/3-4-3c23029a/reports/step4_regression_tests.md`
+
+
+## SOP 3.5 Agent Eval Regression (2026-02-13, run `3-5-42693ec1`)
+
+- Evidence Root: `outputs/3.5/3-5-42693ec1/`
+- Tasks/graders: `outputs/3.5/3-5-42693ec1/reports/step2_tasks_graders.md`
+- Eval results: `outputs/3.5/3-5-42693ec1/reports/step3_eval_results.md`
+- Agent eval summary: `agent-eval/runs/3-5-42693ec1/summary.json` (PASS)
+
+
+## SOP 3.8 Local Docker Compose (2026-02-13, run `3-8-384dee2c`)
+
+- Evidence Root: `outputs/3.8/3-8-384dee2c/`
+- Step2 compose start: `outputs/3.8/3-8-384dee2c/reports/step2_docker_compose_start.md`
+- Step3 core path smoke: `outputs/3.8/3-8-384dee2c/reports/step3_core_path_smoke.md`
+- Final report: `outputs/3.8/3-8-384dee2c/reports/final_report.md`

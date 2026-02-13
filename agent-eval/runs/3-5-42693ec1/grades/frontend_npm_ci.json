@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "pending": false,
+  "grades": [
+    {
+      "id": "exit_code_ok",
+      "type": "exit_code",
+      "status": "pass",
+      "detail": "expected=0 got=0"
+    },
+    {
+      "id": "frontend_npm_ci_log_exists",
+      "type": "file_exists",
+      "status": "pass",
+      "detail": "ok"
+    }
+  ]
+}

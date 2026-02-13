@@ -5,6 +5,17 @@ import { PaperTradingAdapter } from './paper-trading.js';
 import { MVP_ACCOUNT_RISK } from '../risk/config.js';
 import { binanceClient } from '../data/binance-client.js';
 
+export class UpstreamUnavailableError extends Error {
+  public readonly cause?: unknown;
+
+  constructor(message: string, cause?: unknown) {
+    super(message);
+    this.name = 'UpstreamUnavailableError';
+    this.cause = cause;
+  }
+}
+
+
 interface TradeRecord {
   id: string;
   orderId: string;
@@ -58,9 +69,34 @@ function normalizeSymbol(symbol: string): string {
   return symbol.replace('/', '').toUpperCase();
 }
 
-async function refreshPrice(context: PaperContext, symbol: string): Promise<void> {
-  const ticker = await binanceClient.getTicker(normalizeSymbol(symbol));
-  context.adapter.setPrice(normalizeSymbol(symbol), ticker.last || ticker.bid);
+async function refreshPrice(
+  context: PaperContext,
+  symbol: string,
+  fallbackPrice?: number
+): Promise<void> {
+  const normalized = normalizeSymbol(symbol);
+
+  if (typeof fallbackPrice === 'number' && fallbackPrice > 0) {
+    context.adapter.setPrice(normalized, fallbackPrice);
+    return;
+  }
+
+  try {
+    const ticker = await binanceClient.getTicker(normalized);
+    context.adapter.setPrice(normalized, ticker.last || ticker.bid);
+    return;
+  } catch (error) {
+    // Fall back to last known price if available.
+    const last = await context.adapter.getLatestPrice(normalized);
+    if (last > 0) {
+      return;
+    }
+
+    throw new UpstreamUnavailableError(
+      `Market data unavailable for symbol ${normalized}`,
+      error
+    );
+  }
 }
 
 function mapFillToTrade(fill: Fill, strategyId?: string): TradeRecord {
@@ -103,7 +139,12 @@ export async function submitPaperOrder(
   const clientOrderId = request.clientOrderId || `client_${Date.now()}`;
   const normalizedSymbol = normalizeSymbol(request.symbol);
 
-  await refreshPrice(context, normalizedSymbol);
+  const existing = context.orderManager.getOrderByClientId(clientOrderId);
+  if (existing) {
+    return existing;
+  }
+
+  await refreshPrice(context, normalizedSymbol, request.price);
 
   const order = await context.orderManager.submitOrder({
     ...request,

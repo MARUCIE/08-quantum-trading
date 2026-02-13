@@ -7,10 +7,13 @@
 | 数据类型 | 供应商 | 端点 | 认证 | 限流 |
 |----------|--------|------|------|------|
 | 现货行情 | Binance | wss://stream.binance.com:9443 | 无需 | 5 req/s |
+| 现货行情（BTC fallback） | Blockchain.info | https://blockchain.info/ticker | 无需 | N/A |
 | 永续行情 | Binance | wss://fstream.binance.com | 无需 | 5 req/s |
 | 历史 K 线 | Binance | GET /api/v3/klines | API Key | 1200 req/min |
 | 账户信息 | Binance | GET /api/v3/account | API Key + Secret | 10 req/s |
 | 下单接口 | Binance | POST /api/v3/order | API Key + Secret | 10 ord/s |
+
+> 运行时切换：通过 `MARKET_DATA_PROVIDER` 选择行情供应商（`binance` 默认；`blockchain_info` 为 BTC ticker fallback）。
 
 ---
 
@@ -22,6 +25,12 @@
 BINANCE_API_KEY=your_api_key_here
 BINANCE_API_SECRET=your_api_secret_here
 BINANCE_TESTNET=true  # MVP 使用测试网
+
+# Testnet endpoints
+
+# Optional: override Spot REST base (for restricted networks)
+# Example: https://data-api.binance.vision
+BINANCE_SPOT_REST_BASE_URL=
 
 # Testnet endpoints
 BINANCE_SPOT_TESTNET=https://testnet.binance.vision
@@ -181,12 +190,31 @@ data/
 
 ---
 
+## blockchain.info (Fallback)
+
+当 Binance/OKX 等交易所 API 由于地理限制或企业网络策略不可用时，可在非生产环境使用 `blockchain.info` 作为真实 API 验收的 fallback。
+
+### 环境变量
+```bash
+MARKET_DATA_PROVIDER=blockchain_info
+```
+
+### 限制
+- 仅支持 BTC ticker（数据源：`https://blockchain.info/ticker` 的 `USD` 报价）。
+- 对于 `BTCUSDT` 等符号，会按 USD 报价近似映射（用于联调/验收，不用于生产精确报价）。
+- K 线/成交/深度等接口仍依赖交易所 API，fallback 不覆盖。
+
+---
+
 ## 地理限制说明
 
-Binance API 在部分地区受限（如中国大陆）。如遇 `Service unavailable from a restricted location` 错误，请：
-1. 使用 VPN 连接到支持地区
-2. 或切换到 OKX 等备选数据源
+Binance API 在部分地区/网络环境受限（如中国大陆、企业 DNS 劫持）。如遇 `Service unavailable from a restricted location`、TLS 证书不匹配或连接超时等错误，可按优先级处理：
+1. 仅行情读取：设置 `BINANCE_SPOT_REST_BASE_URL=https://data-api.binance.vision`（无鉴权的 public market data endpoint）。
+2. 仅 BTC 行情兜底：设置 `MARKET_DATA_PROVIDER=blockchain_info`（`https://blockchain.info/ticker`）。
+3. 使用 VPN 连接到支持地区。
+4. 切换到 OKX 等备选数据源。
 
 ## Changelog
 - 2026-01-26: 初始化数据供应商配置，Binance 作为 MVP 主数据源
 - 2026-01-26: 添加地理限制说明，创建后端数据接入代码
+- 2026-02-13: 添加 `blockchain_info` fallback（`MARKET_DATA_PROVIDER`），用于受限网络下的真实 API 验收。

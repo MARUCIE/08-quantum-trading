@@ -1,0 +1,100 @@
+[
+  {
+    "id": "backend_npm_ci",
+    "title": "Backend install (npm ci)",
+    "description": "Reinstall backend deps for reproducible regression checks.",
+    "input": "Run: cd backend && npm ci",
+    "command": "bash -lc 'set -euo pipefail; cd backend; npm ci 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/backend_npm_ci.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/backend_npm_ci.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "backend_npm_ci_log_exists"
+    ]
+  },
+  {
+    "id": "frontend_npm_ci",
+    "title": "Frontend install (npm ci)",
+    "description": "Ensure optional native deps (rollup/parcel watcher) are installed.",
+    "input": "Run: cd frontend && npm ci",
+    "command": "bash -lc 'set -euo pipefail; cd frontend; npm ci 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/frontend_npm_ci.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/frontend_npm_ci.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "frontend_npm_ci_log_exists"
+    ]
+  },
+  {
+    "id": "backend_vitest",
+    "title": "Backend unit tests (vitest)",
+    "description": "Run backend tests to ensure execution/data changes remain regression-safe.",
+    "input": "Run: cd backend && npm test",
+    "command": "bash -lc 'set -euo pipefail; cd backend; npm test 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/backend_npm_test.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/backend_npm_test.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "backend_npm_test_log_exists"
+    ]
+  },
+  {
+    "id": "backend_typecheck",
+    "title": "Backend typecheck (tsc --noEmit)",
+    "description": "Run TypeScript typecheck for backend.",
+    "input": "Run: cd backend && npm run typecheck",
+    "command": "bash -lc 'set -euo pipefail; cd backend; npm run typecheck 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/backend_typecheck.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/backend_typecheck.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "backend_typecheck_log_exists"
+    ]
+  },
+  {
+    "id": "frontend_vitest",
+    "title": "Frontend unit tests (vitest run)",
+    "description": "Run frontend unit tests (non-watch).",
+    "input": "Run: cd frontend && npm run test:run",
+    "command": "bash -lc 'set -euo pipefail; cd frontend; npm run test:run 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/frontend_vitest.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/frontend_vitest.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "frontend_vitest_log_exists"
+    ]
+  },
+  {
+    "id": "frontend_build",
+    "title": "Frontend production build (next build)",
+    "description": "Build frontend in production mode to catch SSR/Next build regressions.",
+    "input": "Run: cd frontend && npm run build",
+    "command": "bash -lc 'set -euo pipefail; cd frontend; npm run build 2>&1 | tee ../outputs/3.5/3-5-42693ec1/logs/frontend_build.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/frontend_build.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "frontend_build_log_exists"
+    ]
+  },
+  {
+    "id": "ai_check",
+    "title": "Project gate: ai check",
+    "description": "Run unified validation gate.",
+    "input": "Run: ai check",
+    "command": "bash -lc 'set -euo pipefail; ai check 2>&1 | tee outputs/3.5/3-5-42693ec1/logs/ai_check.log'",
+    "artifacts": [
+      "outputs/3.5/3-5-42693ec1/logs/ai_check.log"
+    ],
+    "graders": [
+      "exit_code_ok",
+      "ai_check_log_exists"
+    ]
+  }
+]
