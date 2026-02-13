@@ -254,6 +254,10 @@ flowchart TB
 | `NEXT_PUBLIC_WS_URL` | `ws://<host>:<port>` | 指向 WS 端口（默认 3002） |
 | `API_PORT` | `3001` | HTTP API 监听端口 |
 | `WS_PORT` | `3002` | WebSocket 监听端口 |
+| `ENABLE_WEBSOCKET` | `true|false` (default `false`) | 控制是否启用 WS 上游实时行情流（BinanceWS）。关闭时仍提供 WS server + auth/acl + subscribe ack，但不推送上游实时数据 |
+| `RATE_LIMIT_WINDOW_MS` | `60000` | API 限流窗口（毫秒），本地 E2E 可调优以避免 429 flake |
+| `RATE_LIMIT_MAX_REQUESTS` | `100` | API 限流窗口内最大请求数（本地 E2E 可调高，例如 `2000`） |
+| `BINANCE_SPOT_REST_BASE_URL` | `https://data-api.binance.vision` | Binance REST base override（受限网络/地区下用于保证行情可达） |
 
 ### HTTP Error Contract
 - 错误返回统一为：`{ message: string, code: string, status: number, ...extras }`

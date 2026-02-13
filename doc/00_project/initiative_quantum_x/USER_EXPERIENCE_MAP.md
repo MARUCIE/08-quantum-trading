@@ -31,6 +31,7 @@
 - 账户接入时长与授权完成率
 - 模拟/实盘切换成功率
 - 市场数据不可用时空态呈现成功率（5xx=0）
+- WS upstream 关闭时（ENABLE_WEBSOCKET=false）核心 journey 不阻断（基础体验仍通过）
 - 关键交易路径可用性（SLO >= 99.9%）
 - 未授权订阅/越权操作拦截率（目标 100%）
 - 关键任务沙盒执行覆盖率（目标 >= 90%）
@@ -269,6 +270,23 @@
 - `outputs/4.1/4-1-873e9072/reports/step3_ux_core_path.md`
 - `outputs/4.1/4-1-873e9072/reports/step4_blocker_scan.md`
 - `outputs/4.1/4-1-873e9072/logs/step3-ux-core.log`
+
+## SOP 4.1 UX Map 回归（run `4-1-67d46392`, 2026-02-13）
+
+- 覆盖脚本（chromium）：
+  - core path E2E suite：`17/17 PASS`（核心入口与任务链路）
+  - user-journey：`20/20 PASS`（含 performance 与 minimal console errors）
+  - frontend-quality scan：console/page/network/404 全量为 `0`
+- 发现与修复：
+  - 429 flake：后端 rate-limit 可配置化并在本地回归环境将上限提升到 `2000/min`（避免 E2E 抖动）
+  - WS upstream 451 噪音：WS server 上游行情连接改为 `ENABLE_WEBSOCKET=true` 才启用（默认关闭不影响主路径）
+
+### 证据
+- `outputs/4.1/4-1-67d46392/reports/step3_ux_core_path.md`
+- `outputs/4.1/4-1-67d46392/reports/step4_blocker_scan.md`
+- `outputs/4.1/4-1-67d46392/logs/step3_playwright_rerun.log`
+- `outputs/4.1/4-1-67d46392/logs/step4c_playwright_user_journey.log`
+- `outputs/4.1/4-1-67d46392/reports/frontend_quality.json`
 
 ## SOP 1.1 UX Validation Update (2026-02-12, run `1-1-c1a3a846`)
 

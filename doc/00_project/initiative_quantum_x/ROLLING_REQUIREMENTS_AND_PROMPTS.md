@@ -450,3 +450,42 @@ Reference: `AR-027` 已纳入本轮验证并保留触发器 `ux_gate_devserver_f
 |---|---|---|---|---|---|---|
 | AR-031 | Persona E2E test 401 AUTH_REQUIRED on simulated account creation / API key creation | No API key configured in test environment; backend requires `Authorization: Bearer <key>` or `X-API-Key` header | Set `API_STATIC_KEY` on backend + `PLAYWRIGHT_API_KEY` / `NEXT_PUBLIC_API_KEY` on frontend/Playwright | 15/15 persona PASS + 3/3 full-loop PASS | E2E env setup must include API key triple (backend + frontend + Playwright); document in test README | "persona_e2e_401_auth_required_no_api_key" |
 
+
+
+## Rolling Update (2026-02-13, SOP 4.1 Project Full-Chain Regression run `4-1-67d46392`)
+
+### Requirements Delta
+| ID | Date | Requirement | Priority | Status | Source | Notes |
+|---|---|---|---|---|---|---|
+| REQ-048 | 2026-02-13 | WS 上游实时行情流必须 opt-in：仅当 `ENABLE_WEBSOCKET=true` 才连接上游（避免受限网络/地区导致的 451 噪音影响主路径） | P1 | Done | SOP 4.1 | Evidence: `outputs/4.1/4-1-67d46392/reports/step4_blocker_scan.md` |
+| REQ-049 | 2026-02-13 | 本地回归/E2E 稳定性：API rate-limit 必须可配置（`RATE_LIMIT_WINDOW_MS`/`RATE_LIMIT_MAX_REQUESTS`），避免并发回归触发 429 flake | P1 | Done | SOP 4.1 | Evidence: `outputs/4.1/4-1-67d46392/reports/step4_blocker_scan.md` |
+| REQ-050 | 2026-02-13 | Frontend-quality 回归必须记录实际 404 response URL（用于诊断 console `Failed to load resource: 404`） | P2 | Done | SOP 4.1 | Evidence: `outputs/4.1/4-1-67d46392/reports/frontend_quality.json` |
+
+### Prompt Delta
+| ID | Prompt | Purpose |
+|---|---|---|
+| PRM-047 | "Execute SOP 4.1 project full-chain regression (UX Map + E2E): run core-path suites, scan blockers (429/451/404), remediate with config gates, sync PDCA docs, and preserve evidence under outputs/4.1/<run_id>." | 全链路回归 + 卡点治理模板 |
+
+### Anti-Regression Delta
+| ID | Symptom | Root Cause | Fix | Verification | Prevention | Trigger |
+|---|---|---|---|---|---|---|
+| AR-032 | Playwright persona / full-loop 在本地回归中偶发 429 失败 | rate-limit 默认阈值过低且未暴露为可调参数 | compose 暴露 `RATE_LIMIT_WINDOW_MS`/`RATE_LIMIT_MAX_REQUESTS` 并在本地回归提升到 `2000/min` | `outputs/4.1/4-1-67d46392/logs/step3_playwright_rerun.log` | 本地回归脚本默认设置高阈值；生产阈值另行按容量/SLO 回归 | "HTTP 429" |
+| AR-033 | 后端 WS 订阅触发上游 BinanceWS 连接并在受限环境产生 451 噪音 | WS server 在任意 subscription 时无条件 connect upstream（忽略 `ENABLE_WEBSOCKET`） | `backend/src/ws/server.ts` 上游连接 gated by `ENABLE_WEBSOCKET` | `outputs/4.1/4-1-67d46392/logs/step4c_backend_logs_after_ws_journey.log` | upstream 默认关闭；仅在需要实时行情流时显式开启 | "Unexpected server response: 451" |
+| AR-034 | FE quality scan 只看到 console 404，但无法定位具体资源 URL | 质量扫描未采集 404 response 详情 | `frontend-quality.spec.ts` 记录 `notFoundResponses`（url/method/resourceType） | `outputs/4.1/4-1-67d46392/reports/frontend_quality.json` | 保持 404 response 采集字段，防止回归诊断失明 | "Failed to load resource: the server responded with a status of 404" |
+
+## Rolling Update (2026-02-13, SOP 5.1 Joint Acceptance rerun `5-1-7ca0f855`)
+
+### Requirements Delta
+| ID | Date | Requirement | Priority | Status | Source | Notes |
+|---|---|---|---|---|---|---|
+| REQ-051 | 2026-02-13 | 在关键回归治理（SOP 4.1）后必须复跑 SOP 5.1 联合验收与发布守门（Round1 `ai check` + Round2 UX Map） | P2 | Done | SOP 5.1 | Evidence: `outputs/5.1/5-1-7ca0f855/reports/final_report.md` |
+
+### Prompt Delta
+| ID | Prompt | Purpose |
+|---|---|---|
+| PRM-048 | "Execute SOP 5.1 joint acceptance release gate rerun after a major regression-fix run: planning read, PM/Tech/QA acceptance, Round1 ai check, Round2 UX Map replay with screenshots, and closeout evidence under outputs/5.1/<run_id>." | 联合验收/发布守门复跑模板 |
+
+### Anti-Regression Delta
+| ID | Symptom | Root Cause | Fix | Verification | Prevention | Trigger |
+|---|---|---|---|---|---|---|
+| AR-035 | UX Round2 full-loop-closure API 调用返回 404（误报） | 未显式设置 `FULL_LOOP_API_BASE`，默认指向 `127.0.0.1:3001` 与实际 compose 端口不一致 | Round2 gate 脚本强制注入 `FULL_LOOP_API_BASE=http://127.0.0.1:4008` | `outputs/5.1/5-1-7ca0f855/logs/step4_playwright_ux_round2.log` | 发布守门/回归脚本统一设置 FULL_LOOP_API_BASE 与 PLAYWRIGHT_BASE_URL | "FULL_LOOP_API_BASE" |

@@ -908,3 +908,31 @@ Related:
 - Step2 compose start: `outputs/3.8/3-8-384dee2c/reports/step2_docker_compose_start.md`
 - Step3 core path smoke: `outputs/3.8/3-8-384dee2c/reports/step3_core_path_smoke.md`
 - Final report: `outputs/3.8/3-8-384dee2c/reports/final_report.md`
+
+## SOP 4.1 Project Full-Chain Regression (2026-02-13, run `4-1-67d46392`)
+
+- Evidence Root: `outputs/4.1/4-1-67d46392/`
+- Fixes / Decisions:
+  - 429 flake: rate-limit 参数通过 compose env 暴露，并在本地回归将上限提升到 `2000/min`（避免 E2E 抖动）。
+  - WS upstream 451 噪音：WS server 上游行情连接改为 `ENABLE_WEBSOCKET=true` 才启用；默认关闭不影响主路径。
+  - FE quality scan：增强 `frontend-quality.spec.ts` 记录 404 response URL（用于可诊断性）；当前 run `consoleErrorCount=0`、`notFoundCount=0`。
+- Verification:
+  - Round1 `ai check` PASS (run_dir: `/Users/mauricewen/AI-tools/outputs/check/20260213-032232-68f10d35`).
+  - Round2 UX Map (chromium) PASS `24/24`.
+  - 注：Round2 首次尝试因未设置 `FULL_LOOP_API_BASE`（默认 `127.0.0.1:3001`）导致 `full-loop-closure` API 404；补齐 `FULL_LOOP_API_BASE=http://127.0.0.1:4008` 后复跑通过。
+- Evidence:
+  - `outputs/4.1/4-1-67d46392/reports/step4_blocker_scan.md`
+  - `outputs/4.1/4-1-67d46392/reports/step5_docsync.md`
+  - `outputs/4.1/4-1-67d46392/reports/step6_round1_round2.md`
+
+## SOP 5.1 Joint Acceptance & Release Gate (2026-02-13, run `5-1-7ca0f855`)
+
+- Evidence Root: `outputs/5.1/5-1-7ca0f855/`
+- Step2 joint acceptance: `outputs/5.1/5-1-7ca0f855/reports/step2_joint_acceptance.md`
+- Round1 `ai check`: PASS
+  - Log: `outputs/5.1/5-1-7ca0f855/logs/step3_ai_check.log`
+  - run_dir: `/Users/mauricewen/AI-tools/outputs/check/20260213-044001-e011deea`
+- Round2 UX Map (Playwright chromium): PASS 24/24
+  - Log: `outputs/5.1/5-1-7ca0f855/logs/step4_playwright_ux_round2.log`
+  - Screenshots: `outputs/5.1/5-1-7ca0f855/screenshots/`
+- Final: `outputs/5.1/5-1-7ca0f855/reports/final_report.md`

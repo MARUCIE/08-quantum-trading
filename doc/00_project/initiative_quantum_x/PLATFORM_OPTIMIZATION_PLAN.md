@@ -160,6 +160,16 @@
 | 同类问题扩散扫描 | 扫描 lifecycle drift 与 upstream timeout 对主路径影响 | Done | `outputs/4.1/4-1-873e9072/reports/step4_blocker_scan.md` |
 | 双轮门禁 | Round1 `ai check` + Round2 UX Map 复核 | In Progress | `outputs/4.1/4-1-873e9072/logs/` |
 
+## SOP 4.1 执行进展（run `4-1-67d46392`, 2026-02-13）
+
+| 领域 | 计划动作 | 当前状态 | 证据 |
+|---|---|---|---|
+| UX 回归主路径 | 按 UX Map 执行 core-path E2E | Done | `outputs/4.1/4-1-67d46392/reports/step3_ux_core_path.md` |
+| Flake/噪音治理 | 429 rate-limit + WS upstream 451 的治理 | Done | `outputs/4.1/4-1-67d46392/reports/step4_blocker_scan.md` |
+| Frontend Quality | network/console/404/perf 快扫 | Done | `outputs/4.1/4-1-67d46392/reports/frontend_quality.json` |
+| UX Round2 复核 | user-journey（chromium） | Done | `outputs/4.1/4-1-67d46392/logs/step4c_playwright_user_journey.log` |
+| 双轮门禁 | Round1 `ai check` + Round2 UX Map | Done | `outputs/4.1/4-1-67d46392/reports/step6_round1_round2.md` |
+
 ## SOP 1.1 Verification Stability Optimization (2026-02-12, run `1-1-c1a3a846`)
 
 | 领域 | 动作 | 状态 | 证据 |

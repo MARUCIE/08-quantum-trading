@@ -37,6 +37,8 @@ Related:
 | D23 | SOP 3.8 本地 Docker 跑通验证 | Docker/Compose 启动最小链路成功；核心路径（创建模拟账户->下单->回显）通过；记录失败原因与修复 | compose up log + core path smoke + final report | `outputs/3.8/3-8-384dee2c/reports/final_report.md` |
 | D24 | SOP 3.4 Reliability & Fault Drill | 失败路径识别完成；降级/幂等/恢复策略落盘；故障演练与回归测试通过 | failure paths + drill report + regression tests | `outputs/3.4/3-4-3c23029a/reports/step4_regression_tests.md` |
 | D25 | SOP 3.5 智能体评测与回归 | tasks/graders/outcomes 定义完成；评测执行 PASS；回归用例补齐 | agent-eval plan + tasks/graders + summary + final report | `outputs/3.5/3-5-42693ec1/reports/final_report.md` |
+| D26 | SOP 4.1 项目级全链路回归（UX Map + E2E） | 全链路回归完成；Round1 `ai check` PASS；Round2 UX Map 模拟 PASS；flake/噪音治理完成 | blocker scan + doc sync + round1/round2 logs + screenshots | `outputs/4.1/4-1-67d46392/reports/step6_round1_round2.md` |
+| D27 | SOP 5.1 联合验收与发布守门（重跑） | 联合验收报告完成；Round1 `ai check` PASS；Round2 UX Map 模拟 PASS；SOP run 关单 | joint acceptance + round1 log + round2 log/screenshots + final sop status | `outputs/5.1/5-1-7ca0f855/reports/final_report.md` |
 
 # Release/Deployment Notes (if applicable)
 - rollout strategy:
@@ -44,6 +46,8 @@ Related:
 - monitoring:
 
 ## Changelog
+- 2026-02-13: added D27 for SOP 5.1 rerun joint acceptance gate (`5-1-7ca0f855`).
+- 2026-02-13: added D26 for SOP 4.1 full-chain regression (`4-1-67d46392`).
 - 2026-02-13: updated D23 for SOP 3.8 local docker compose verification (`3-8-384dee2c`).
 - 2026-02-13: added D24 for SOP 3.4 reliability & fault drill deliverables (`3-4-3c23029a`).
 - 2026-02-13: added D25 for SOP 3.5 agent eval regression deliverables (`3-5-42693ec1`).

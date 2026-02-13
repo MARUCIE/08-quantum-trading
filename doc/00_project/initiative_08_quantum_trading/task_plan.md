@@ -1150,3 +1150,46 @@ Related:
 | Step 2 | Done | `outputs/3.8/3-8-384dee2c/reports/step2_docker_compose_start.md` |
 | Step 3 | Done | `outputs/3.8/3-8-384dee2c/reports/step3_core_path_smoke.md` |
 | Step 4 | Done | `outputs/3.8/3-8-384dee2c/reports/final_report.md` |
+
+## SOP 4.1 Project Full-Chain Regression (2026-02-13, run `4-1-67d46392`)
+
+### Objective
+- 项目级全链路回归：按 UX Map 执行 core-path E2E，治理卡点与同类问题，并完成 PDCA 文档同步与双轮门禁验收。
+
+### Evidence Root
+- `outputs/4.1/4-1-67d46392/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/4.1/4-1-67d46392/reports/step1_planning_read.md` |
+| Step 2 | Done | `outputs/4.1/4-1-67d46392/logs/step2_ralph_loop_state.txt` |
+| Step 3 | Done | `outputs/4.1/4-1-67d46392/reports/step3_ux_core_path.md` |
+| Step 4 | Done | `outputs/4.1/4-1-67d46392/reports/step4_blocker_scan.md` |
+| Step 5 | Done | `outputs/4.1/4-1-67d46392/reports/step5_docsync.md` |
+| Step 6 | Done | `outputs/4.1/4-1-67d46392/reports/step6_round1_round2.md` |
+
+### Verification
+- Round1 gate: `ai check` PASS (`/Users/mauricewen/AI-tools/outputs/check/20260213-032232-68f10d35`).
+- Round2 gate: UX Map simulation (Playwright chromium) PASS.
+
+## SOP 5.1 Joint Acceptance & Release Gate (2026-02-13, run `5-1-7ca0f855`)
+
+### Objective
+- 产品/技术/质量三方联合验收 + 发布守门复跑：在最新变更（SOP 4.1 flake 治理 + PDCA sync）后重新执行 Round1/2 gate。
+
+### Evidence Root
+- `outputs/5.1/5-1-7ca0f855/`
+
+### Step Status
+| Step | Status | Evidence |
+|---|---|---|
+| Step 1 | Done | `outputs/5.1/5-1-7ca0f855/reports/step1_planning_read.md` |
+| Step 2 | Done | `outputs/5.1/5-1-7ca0f855/reports/step2_joint_acceptance.md` |
+| Step 3 | Done | `outputs/5.1/5-1-7ca0f855/logs/step3_ai_check.log` |
+| Step 4 | Done | `outputs/5.1/5-1-7ca0f855/reports/step4_ux_round2_summary.md` |
+| Step 5 | Done | `outputs/5.1/5-1-7ca0f855/reports/step5_ralph_loop.md` |
+
+### Verification
+- Round1 gate: `ai check` PASS (run_dir: `/Users/mauricewen/AI-tools/outputs/check/20260213-044001-e011deea`).
+- Round2 gate: UX Map simulation PASS (Playwright chromium 24/24).

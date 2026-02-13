@@ -91,6 +91,8 @@
 - 模型训练与回测的计算资源预算
 - 市场数据上游不可用时，API 需降级为 200 + 空数据/缓存，避免 5xx 并提供可用空态
 - 真实 API 验收必须走可达的真实行情供应商：默认 `binance`；受限网络下可切换 `MARKET_DATA_PROVIDER=blockchain_info`（BTC ticker）用于端到端验收与 fixtures 采集（禁止用 mock 替代）。
+- WS 上游实时流默认 opt-in：`ENABLE_WEBSOCKET=true` 才会连接上游行情 WS；默认关闭以避免受限网络/地区导致的 451/连接失败影响主路径（基线以 REST 可用为准）。
+- 本地 E2E 稳定性：可通过 `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX_REQUESTS` 调优避免 429 flake；生产阈值需按容量与 SLO 回归合理值。
 
 ## 里程碑（高层）
 - M1: 研究与回测底座完成
