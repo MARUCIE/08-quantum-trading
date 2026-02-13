@@ -2,8 +2,8 @@
 Title: Task Plan - initiative_quantum_x
 Scope: project
 Owner: ai-agent
-Status: active
-LastUpdated: 2026-02-12
+Status: completed
+LastUpdated: 2026-02-13
 Related:
   - /doc/00_project/initiative_quantum_x/PRD.md
   - /doc/00_project/initiative_quantum_x/SYSTEM_ARCHITECTURE.md
@@ -434,7 +434,7 @@ Output
 
 ## SOP 1.1 Run Plan (2026-02-12)
 - Run ID: `1-1-065abd2c`
-- Status: In Progress
+- Status: Superseded (canonical run: `1-1-c1a3a846`; this block kept for audit)
 - Plan-first artifact: `outputs/1.1/1-1-065abd2c/reports/plan_first.md`
 - Ralph loop state: `.codex/ralph-loop.local.md`
 - Evidence root: `outputs/1.1/1-1-065abd2c/`
