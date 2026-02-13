@@ -72,6 +72,8 @@ export class QuantumWsServer {
   private wss: WebSocketServer | null = null;
   private clients: Map<string, ClientState> = new Map();
   private binanceWs: BinanceWebSocket;
+  private upstreamEnabled = false;
+  private warnedUpstreamDisabled = false;
   private channelSubscribers: Map<string, Set<string>> = new Map();
   private pingInterval: NodeJS.Timeout | null = null;
   private clientIdCounter = 0;
@@ -85,6 +87,10 @@ export class QuantumWsServer {
    */
   start(port: number = 3002): Promise<void> {
     return new Promise((resolve) => {
+      // Only connect to upstream market-data streams when explicitly enabled.
+      // Note: env vars are loaded in index.ts before wsServer.start().
+      this.upstreamEnabled = process.env.ENABLE_WEBSOCKET === 'true';
+
       this.wss = new WebSocketServer({ port });
 
       this.wss.on('connection', (ws, req) => {
@@ -294,6 +300,17 @@ export class QuantumWsServer {
     interval?: KlineInterval
   ): void {
     if (!symbol) return;
+
+    if (!this.upstreamEnabled) {
+      if (!this.warnedUpstreamDisabled) {
+        this.warnedUpstreamDisabled = true;
+        console.log(
+          '[WS] Upstream market streaming is disabled (set ENABLE_WEBSOCKET=true to enable). ' +
+            'Subscriptions will not receive real-time updates.'
+        );
+      }
+      return;
+    }
 
     switch (channel) {
       case 'ticker':

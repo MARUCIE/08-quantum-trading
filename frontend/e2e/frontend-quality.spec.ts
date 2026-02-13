@@ -1,4 +1,11 @@
-import { expect, test, type ConsoleMessage, type Page, type Request } from "@playwright/test";
+import {
+  expect,
+  test,
+  type ConsoleMessage,
+  type Page,
+  type Request,
+  type Response,
+} from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -15,11 +22,19 @@ type RouteReport = {
   consoleErrorCount: number;
   pageErrorCount: number;
   requestFailureCount: number;
+  notFoundCount: number;
 };
 
 type ErrorRecord = {
   route: string;
   text: string;
+};
+
+type NotFoundRecord = {
+  route: string;
+  url: string;
+  method: string;
+  resourceType: string;
 };
 
 const evidenceRoot =
@@ -89,11 +104,13 @@ test.describe("Frontend Quality Scan", () => {
     const consoleErrors: ErrorRecord[] = [];
     const pageErrors: ErrorRecord[] = [];
     const requestFailures: ErrorRecord[] = [];
+    const notFoundResponses: NotFoundRecord[] = [];
 
     for (const route of routes) {
       const routeConsoleErrors: ErrorRecord[] = [];
       const routePageErrors: ErrorRecord[] = [];
       const routeRequestFailures: ErrorRecord[] = [];
+      const routeNotFoundResponses: NotFoundRecord[] = [];
 
       const handleConsole = (message: ConsoleMessage) => {
         if (message.type() === "error") {
@@ -125,9 +142,27 @@ test.describe("Frontend Quality Scan", () => {
         });
       };
 
+      const handleResponse = (response: Response) => {
+        if (response.status() !== 404) return;
+
+        const request = response.request();
+        const url = request.url();
+
+        // Ignore websocket noise; 404s for document/assets are actionable.
+        if (url.startsWith("ws:") || url.startsWith("wss:")) return;
+
+        routeNotFoundResponses.push({
+          route,
+          url,
+          method: request.method(),
+          resourceType: request.resourceType(),
+        });
+      };
+
       page.on("console", handleConsole);
       page.on("pageerror", handlePageError);
       page.on("requestfailed", handleRequestFailed);
+      page.on("response", handleResponse);
 
       const started = Date.now();
       const response = await page.goto(route, { waitUntil: "networkidle" });
@@ -151,15 +186,19 @@ test.describe("Frontend Quality Scan", () => {
         consoleErrorCount: routeConsoleErrors.length,
         pageErrorCount: routePageErrors.length,
         requestFailureCount: routeRequestFailures.length,
+        notFoundCount: routeNotFoundResponses.length,
       });
 
       consoleErrors.push(...routeConsoleErrors);
       pageErrors.push(...routePageErrors);
       requestFailures.push(...routeRequestFailures);
 
+      notFoundResponses.push(...routeNotFoundResponses);
+
       page.off("console", handleConsole);
       page.off("pageerror", handlePageError);
       page.off("requestfailed", handleRequestFailed);
+      page.off("response", handleResponse);
     }
 
     writeFileSync(
@@ -171,11 +210,13 @@ test.describe("Frontend Quality Scan", () => {
           consoleErrors,
           pageErrors,
           requestFailures,
+          notFoundResponses,
           summary: {
             routeCount: routeReports.length,
             consoleErrorCount: consoleErrors.length,
             pageErrorCount: pageErrors.length,
             requestFailureCount: requestFailures.length,
+            notFoundCount: notFoundResponses.length,
           },
         },
         null,
