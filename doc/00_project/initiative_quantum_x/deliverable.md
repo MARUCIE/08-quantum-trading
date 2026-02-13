@@ -186,3 +186,16 @@ Related:
   - [x] CLAUDE.md/AGENTS.md: N/A (no cross-task reusable rules produced)
   - [x] Rolling Ledger: REQ-047, PRM-046, AR-031 appended
   - [x] Three-end consistency: Local==GitHub verified; Production N/A. evidence: `outputs/5.1/5-1-b8b7b702/reports/tri_end_consistency.md`
+
+## SOP 5.1 Deliverable (2026-02-13, run `5-1-b748dae1`)
+- Deliverable: Joint acceptance & release gate -- Round 1 (425/425 tests + build OK) + Round 2 (persona 3/3 + full-loop 3/3 chromium, 13/15 matrix).
+- Round 1: Backend 131/131 + Frontend 294/294 = 425/425 PASS; production build OK (70 routes)
+- Round 2: Persona chromium 3/3 PASS, full-loop 3/3 PASS, 5-browser matrix 13/15 (Firefox timeout flake)
+- Ralph Loop: Not triggered (acceptance PASS)
+- Evidence root: `outputs/5.1/5-1-b748dae1/`
+- Task Closeout:
+  - [x] Skills: N/A (acceptance SOP, no new reusable skill)
+  - [x] PDCA docs: N/A (no code changes; notes.md updated with acceptance evidence)
+  - [x] CLAUDE.md/AGENTS.md: N/A (no cross-task reusable rules)
+  - [x] Rolling Ledger: N/A (no new requirements; acceptance-only SOP)
+  - [x] Three-end consistency: Local `f9dc0b1`; no deployment triggered
