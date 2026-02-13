@@ -433,3 +433,20 @@ Reference: `AR-027` 已纳入本轮验证并保留触发器 `ux_gate_devserver_f
 |---|---|---|---|---|---|---|
 | AR-030 | Route drift between routes.ts and auth-policy.ts / OpenAPI / frontend | New endpoints added without updating all three contract surfaces | N/A (no drift found this audit) | 20/20 contract tests + 422/422 full suite | `openapi-sync.test.ts` enforces routes.ts <-> openapi.yaml parity; `auth-policy.test.ts` enforces fail-closed default | "route_drift_openapi_authpolicy" |
 
+## Rolling Update (2026-02-13, SOP 3.6 Multi-Persona Real Flow Retest)
+
+### Requirements Delta
+| ID | Date | Requirement | Priority | Status | Source | Notes |
+|---|---|---|---|---|---|---|
+| REQ-047 | 2026-02-13 | Multi-persona real flow retest (post SOP 3.2 re-audit): 3 personas x 5 browsers = 15 tests + 3 full-loop-closure tests; all PASS in non-production (backend 39011/39012, webpack frontend, API_STATIC_KEY) | P1 | Done | User | Evidence: `outputs/3.6/3-6-fb667615/` |
+
+### Prompt Delta
+| ID | Prompt | Purpose |
+|---|---|---|
+| PRM-046 | "Execute SOP 3.6 multi-persona real flow: start backend on non-default ports, start frontend in webpack mode, configure API_STATIC_KEY, run persona-real-flow.spec.ts across 5-browser matrix, run full-loop-closure.spec.ts, capture screenshots as evidence." | Multi-persona real flow retest template |
+
+### Anti-Regression Delta
+| ID | Symptom | Root Cause | Fix | Verification | Prevention | Trigger |
+|---|---|---|---|---|---|---|
+| AR-031 | Persona E2E test 401 AUTH_REQUIRED on simulated account creation / API key creation | No API key configured in test environment; backend requires `Authorization: Bearer <key>` or `X-API-Key` header | Set `API_STATIC_KEY` on backend + `PLAYWRIGHT_API_KEY` / `NEXT_PUBLIC_API_KEY` on frontend/Playwright | 15/15 persona PASS + 3/3 full-loop PASS | E2E env setup must include API key triple (backend + frontend + Playwright); document in test README | "persona_e2e_401_auth_required_no_api_key" |
+

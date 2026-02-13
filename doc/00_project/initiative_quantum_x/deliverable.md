@@ -172,3 +172,15 @@ Related:
   - [x] CLAUDE.md/AGENTS.md: N/A (no cross-task reusable rules produced)
   - [x] Rolling Ledger: REQ-046, PRM-045, AR-030 appended
   - [x] Three-end consistency: Local `0735777` = GitHub `0735777`; Production N/A (no deployment triggered by audit)
+
+## SOP 3.6 Deliverable (2026-02-13, run `3-6-fb667615`)
+- Deliverable: Multi-persona real flow retest -- 3 personas x 5 browsers (15/15 PASS) + full-loop-closure (3/3 PASS); 56 screenshots captured.
+- Round 1: N/A (verification-only SOP, no code changes; tests serve as round 1 gate)
+- Round 2: Persona real-flow E2E across 5-browser matrix serves as UX Map simulation
+- Evidence root: `outputs/3.6/3-6-fb667615/`
+- Task Closeout:
+  - [x] Skills: N/A (verification SOP, no new reusable skill)
+  - [x] PDCA docs: USER_EXPERIENCE_MAP.md updated with run results and persona matrix
+  - [x] CLAUDE.md/AGENTS.md: N/A (no cross-task reusable rules produced)
+  - [x] Rolling Ledger: REQ-047, PRM-046, AR-031 appended
+  - [x] Three-end consistency: Local `989ff25` (ahead of GitHub `0735777`; batch push pending); Production N/A (verification SOP, no deployment)

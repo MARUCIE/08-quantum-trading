@@ -10,6 +10,46 @@ Related:
 
 # Session Log
 
+## 2026-02-13: SOP 3.6 Multi-Persona Real Flow Testing (run `3-6-fb667615`)
+
+### Environment
+- Backend: port 39011 (API) / 39012 (WS), `API_STATIC_KEY=qx_test_e2e_key`
+- Frontend: port 3000, webpack dev mode (Turbopack workspace root bug workaround, AR-028)
+- `NEXT_PUBLIC_API_KEY=qx_test_e2e_key`, `FULL_LOOP_API_BASE=http://127.0.0.1:39011`
+
+### Personas (3 types, aligned to UX Map)
+
+| Persona | Entry | Task | Result | Journey Alignment |
+|---|---|---|---|---|
+| Quant Researcher | `/strategies` | View strategies -> `/model-backtest` -> Run Backtest | `Avg Test Accuracy` visible | Strategy Dev -> Strategy Review |
+| Execution Trader | `/accounts` | Create sim account -> `/trading` -> `/risk` | Account created (201), trading/risk pages reachable | Account Prep -> Paper Trading -> Live Trading |
+| Ops & Compliance | `/api-keys` | Create API Key -> Confirm banner -> `/audit` | Key created (201), audit page reachable | Ops & Audit |
+
+### Execution Results
+
+| Test Suite | Browser Matrix | Result | Time |
+|---|---|---|---|
+| persona-real-flow (chromium) | 1 browser | 3/3 PASS | 19.7s |
+| persona-real-flow (all 5) | chromium/firefox/webkit/mobile-chrome/mobile-safari | 15/15 PASS | 21.8s |
+| full-loop-closure (chromium) | 1 browser | 3/3 PASS | 18.2s |
+| navigation (chromium) | 1 browser | 8/13 (5 pre-existing) | 33.5s |
+
+### Non-Persona Failures (pre-existing, not regressions)
+
+| Test | Root Cause | Classification |
+|---|---|---|
+| Settings navigation | Auth-guard redirect (no browser session) | Pre-existing |
+| Alerts navigation | Auth-guard redirect (no browser session) | Pre-existing |
+| Mobile drawer | Element instability during CSS animation | Pre-existing |
+| full-loop system/error (initial) | `FULL_LOOP_API_BASE` defaulted to :3001 instead of :39011 | Config gap (fixed by env var) |
+
+### Evidence
+- Screenshots: `outputs/3.6/3-6-fb667615/screenshots/` (56 PNGs, 3 personas x 5 browsers)
+- Logs: `outputs/3.6/3-6-fb667615/logs/`
+
+### Verdict
+All 3 persona journeys pass across 5 browser/viewport configurations (15/15). Full-loop-closure 3/3 PASS. Core user journeys are stable. Non-persona navigation failures are pre-existing auth-guard issues, not regressions.
+
 ## 2026-02-13: SOP 3.2 Frontend-Backend Consistency & Entrypoint Audit
 
 ### Scope

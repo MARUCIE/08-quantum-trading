@@ -277,3 +277,23 @@
   - Execution Trader: `/accounts -> /trading -> /risk`
   - Ops & Compliance: `/api-keys -> /audit`
 - 核验结果：Round 2 回归通过（见 `outputs/1.1/1-1-c1a3a846/reports/step4_ux_round2.md`）。
+
+## SOP 3.6 多类型客户真实流程复测（run `3-6-fb667615`, 2026-02-13）
+
+- 变更性质：体验验证（无代码变更），在 SOP 3.2 re-audit 之后确认 persona 主路径无回归。
+- 环境：Backend `39011/39012` + Frontend webpack mode port `3000` + `API_STATIC_KEY`。
+- Persona 矩阵结果：
+
+| Persona | chromium | firefox | webkit | Mobile Chrome | Mobile Safari |
+|---|---|---|---|---|---|
+| 量化研究员 | PASS | PASS | PASS | PASS | PASS |
+| 执行交易员 | PASS | PASS | PASS | PASS | PASS |
+| 运营/合规 | PASS | PASS | PASS | PASS | PASS |
+
+- 成功率：**15/15 (100%)**
+- Full-loop-closure（chromium）：**3/3 PASS**
+- 证据：56 screenshots captured。
+- 非 persona 已知问题：Settings/Alerts 需浏览器会话 token（auth-guard 重定向）；Mobile drawer CSS 动画不稳定。分类：pre-existing，非回归。
+- 证据路径：
+  - `outputs/3.6/3-6-fb667615/screenshots/` (56 PNGs)
+  - `outputs/3.6/3-6-fb667615/logs/persona-chromium.log`
