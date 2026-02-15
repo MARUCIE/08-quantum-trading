@@ -1351,3 +1351,42 @@ Runtime: 15.2 minutes
 - Step2 scripts: `outputs/3.6/3-6-62df5dbf/reports/step2_personas_and_scripts.md`
 - Step3 execution log: `outputs/3.6/3-6-62df5dbf/logs/step3_persona_real_flow_e2e.log`
 - Screenshots: `outputs/3.6/3-6-62df5dbf/screenshots/persona_real_flow/`
+
+## UX Map Real API Walkthrough (2026-02-15)
+
+### Context
+- Docker environment: backend `4008`, frontend `3008`, WS `4019`
+- Git baseline: `fc24753` (master, clean)
+
+### API Endpoint Verification (12/12 OK)
+| Endpoint | Status | Data Source |
+|----------|--------|-------------|
+| `/api/health` | 200 | internal |
+| `/api/portfolio/account` | 200 | account store |
+| `/api/portfolio/positions` | 200 | account store |
+| `/api/portfolio/stats` | 200 | account store |
+| `/api/strategies` | 200 | registry (2 strategies) |
+| `/api/strategies/:id` | 200 | registry |
+| `/api/risk/metrics` | 200 | risk monitor |
+| `/api/risk/events` | 200 | risk monitor |
+| `/api/market/klines` | 200 | Binance REST (real) |
+| `/api/market/ticker` | 200 | Binance REST (real) |
+| `/api/market/tickers` | 200 | Binance REST (real) |
+| `/api/accounts` | 200 | account store |
+
+### Auth & Error Contract (4/4 OK)
+- No auth header -> 401 `AUTH_REQUIRED`
+- Wrong key -> 401 `AUTH_REQUIRED`
+- 404 route -> 404 `HTTP_404`
+- Invalid body -> 400 `HTTP_400`
+
+### Bug Found & Fixed
+- **Symptom**: `full-loop-closure.spec.ts` tests 2/3 FAIL (404 on `/api/accounts/simulated`)
+- **Root cause**: `apiBase` hardcoded to `http://127.0.0.1:3001` (L8), but Docker maps backend to port 4008; port 3001 occupied by `00-agent-sandbox-mvp-api`
+- **Fix**: Added `NEXT_PUBLIC_API_URL` fallback in `apiBase` resolution chain
+- **Similar pattern scan**: Only 1 occurrence in E2E tests; `client.ts:7` default is overridden by `NEXT_PUBLIC_API_URL` at runtime (no fix needed); `client.test.ts` uses mock fetch (no fix needed)
+- **Verification**: 101/101 E2E tests PASS (chromium, 19.3s)
+
+### Non-Blocking Observations
+- Risk events accumulate across account switches (43.2% drawdown breach x6 from test accounts); `clearEvents()` exists in monitor but no REST endpoint exposed -- feature gap, not bug
+- Docker container logs: zero errors, zero warnings

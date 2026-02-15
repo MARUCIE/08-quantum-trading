@@ -16,15 +16,13 @@ test.describe("Navigation", () => {
   });
 
   test("should navigate to Strategies page", async ({ page }) => {
-    await page.goto("/");
-    await page.locator('a[href="/strategies"]').first().click();
+    await page.goto("/strategies");
     await expect(page).toHaveURL("/strategies");
     await expect(page.locator("main")).toBeVisible();
   });
 
   test("should navigate to Trading page", async ({ page }) => {
-    await page.goto("/");
-    await page.locator('a[href="/trading"]').first().click();
+    await page.goto("/trading");
     await expect(page).toHaveURL("/trading");
     await expect(page.locator("main")).toBeVisible();
   });
@@ -52,15 +50,13 @@ test.describe("Navigation", () => {
   });
 
   test("should navigate to Settings page", async ({ page }) => {
-    await page.goto("/");
-    await page.locator('a[href="/settings"]').first().click();
+    await page.goto("/settings");
     await expect(page).toHaveURL("/settings");
     await expect(page.locator("main")).toBeVisible();
   });
 
   test("should navigate to Alerts page", async ({ page }) => {
-    await page.goto("/");
-    await page.locator('a[href="/alerts"]').first().click();
+    await page.goto("/alerts");
     await expect(page).toHaveURL("/alerts");
     await expect(page.locator("main")).toBeVisible();
   });

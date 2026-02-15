@@ -5,7 +5,10 @@ import path from "node:path";
 const evidenceRoot =
   process.env.FULL_LOOP_EVIDENCE_DIR ||
   path.resolve(process.cwd(), "../outputs/sop-full-loop/local-default/screenshots");
-const apiBase = process.env.FULL_LOOP_API_BASE || "http://127.0.0.1:3001";
+const apiBase =
+  process.env.FULL_LOOP_API_BASE ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:3001";
 
 function ensureDir(dir: string) {
   mkdirSync(dir, { recursive: true });
