@@ -315,3 +315,26 @@
 - 证据路径：
   - `outputs/3.6/3-6-fb667615/screenshots/` (56 PNGs)
   - `outputs/3.6/3-6-fb667615/logs/persona-chromium.log`
+
+## UX Map Real API Walkthrough (2026-02-15)
+
+- 变更性质：E2E 测试环境适配修复（Docker 端口 + 移动端导航），不改变用户旅程结构。
+- Docker 环境：backend `4008`, frontend `3008`, WS `4019`。
+- API 打通验证：12/12 端点 200 OK（含 Binance 实时行情 BTC/ETH/SOL）。
+- 鉴权边界验证：4/4 错误场景正确拦截（401/400/404），响应格式统一。
+- Bug 修复：
+  - `full-loop-closure.spec.ts` apiBase 硬编码 `localhost:3001`，Docker 下命中错误后端 -> 添加 `NEXT_PUBLIC_API_URL` fallback
+  - `navigation.spec.ts` sidebar 点击在移动端超时 -> 改为 `page.goto()` 直接导航
+- 验证结果：
+
+| 浏览器 | Persona | Navigation | Full-Loop | 总计 |
+|--------|---------|------------|-----------|------|
+| chromium | 3/3 | 10/10 | 3/3 | 16/16 |
+| firefox | 3/3 | 10/10 | 3/3 | 16/16 |
+| webkit | 3/3 | 10/10 | 3/3 | 16/16 |
+| Mobile Chrome | 3/3 | 10/10 | 3/3 | 16/16 |
+| Mobile Safari | 3/3 | 10/10 | 3/3 | 16/16 |
+
+- 全量 chromium 套件：**101/101 PASS** (19.3s)
+- 核心 5 浏览器矩阵：**80/80 PASS** (28.5s)
+- Commit: `13b5f72`
