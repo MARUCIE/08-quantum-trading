@@ -720,6 +720,16 @@ export function registerRoutes(server: ApiServer): void {
     server.sendJson(res, 200, events);
   });
 
+  server.delete('/api/risk/events', (_req, res) => {
+    const guard = guardAccountMode('simulated', getActiveAccount());
+    if (!guard.allowed) {
+      server.sendJson(res, 409, { error: guard.reason });
+      return;
+    }
+    riskMonitor.clearEvents();
+    server.sendJson(res, 204, null);
+  });
+
   server.get('/api/risk/limits', (_req, res) => {
     const guard = guardAccountMode('simulated', getActiveAccount());
     if (!guard.allowed) {
