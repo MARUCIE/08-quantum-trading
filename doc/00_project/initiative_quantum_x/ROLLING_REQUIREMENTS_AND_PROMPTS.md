@@ -37,6 +37,7 @@
 | REQ-037 | 2026-02-12 | SOP 1.1 一键全量交付（长任务）：planning-with-files + ralph loop + plan-first + 双轮验收 + Task Closeout | P0 | Done | User | Canonical run `1-1-065abd2c`, evidence: `outputs/1.1/1-1-065abd2c/` |
 | REQ-040 | 2026-02-12 | SOP 4.1 项目级全链路回归：按 UX Map 执行 navigation/persona/full-loop 三套回归，完成 blocker 扫描与双轮验收关单 | P0 | Done | User | Run `4-1-873e9072`, evidence `outputs/4.1/4-1-873e9072/` |
 | REQ-045 | 2026-02-13 | 受限网络下支持真实行情 API fallback（`MARKET_DATA_PROVIDER=blockchain_info`），用于端到端验收与 fixtures 回放 | P1 | Done | User | SOP 3.3 run `3-3-74963f76`, evidence `outputs/3.3/3-3-74963f76/` |
+| REQ-050 | 2026-02-15 | 真实 API 全量打通 + UX Map 模拟 + E2E 卡点修复：确保 12 个 API 端点真实数据可用，5 浏览器矩阵 80/80 PASS | P0 | Done | User | Commits `13b5f72` (fix) + `7087477` (docs) |
 
 
 ## Prompt Library
@@ -82,6 +83,8 @@
 | AR-005 | 提交模拟订单时报 ReferenceError | 多账户重构后 helper 未接入上下文变量 | refreshPrice 接受 context 并使用 adapter | TypeScript 编译 + 下单冒烟 | 添加 no-undef lint + 单测覆盖 submitPaperOrder | "adapter is not defined" |
 | AR-006 | 单页出现多个主按钮或节奏不一致 | 页面未遵循间距基线与按钮层级规范 | 统一 `space-y-6` 并降级次级按钮 | UI/UX 审计 + Playwright evidence | 在 SOP 中加入 UI audit checklist | "multiple_primary_actions" |
 | AR-007 | 市场数据接口返回 500 | 上游 Binance 451 导致未降级 | market endpoints 缓存/空数据降级 | `network-check.txt` 全部 200 | 上游不可用时返回 200 + 空数据 | "binance_451" |
+| AR-008 | full-loop-closure E2E 404 on `/api/accounts/simulated` | `apiBase` hardcoded to port 3001, Docker maps backend to 4008; port 3001 occupied by other project | Added `NEXT_PUBLIC_API_URL` as second fallback in apiBase chain | 101/101 chromium + 80/80 five-browser PASS | E2E tests must resolve API base from env, not hardcode port | "apiBase.*3001", "full-loop-closure" |
+| AR-009 | Navigation E2E 8/80 FAIL on Mobile Chrome/Safari | Sidebar links hidden in mobile drawer; tests clicked collapsed sidebar | Changed to `page.goto()` direct navigation; drawer tests in dedicated Mobile Navigation suite | 80/80 five-browser matrix PASS | Desktop navigation tests use `page.goto()`; sidebar interaction tested in mobile-specific suite | "mobile.*navigation.*sidebar", "Mobile Chrome.*FAIL" |
 | AR-008 | Lighthouse 开发模式分数偏低 | 开发模式禁用 tree-shaking/minification | 必须在生产模式 (npm run build && npm start) 测试性能 | Lighthouse prod mode score > 80 | 性能基准文档明确要求生产模式测试 | "dev_mode_performance" |
 | AR-009 | LCP 超过 4s | 重型组件同步加载阻塞渲染 | 用 next/dynamic 延迟加载 Charts/Sidebar | Lighthouse LCP < 4s | 图表/侧边栏组件必须动态导入 | "lcp_timeout" |
 | AR-010 | WS 通道可被未授权订阅 | WS 订阅链路无 token/ACL 守门 | 引入 token handshake + channel ACL + 审计 | 未授权订阅拦截率 100% | WS subscribe path 强制授权检查 | "ws_unauthorized_subscribe" |

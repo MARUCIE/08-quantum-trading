@@ -1390,3 +1390,25 @@ Runtime: 15.2 minutes
 ### Non-Blocking Observations
 - Risk events accumulate across account switches (43.2% drawdown breach x6 from test accounts); `clearEvents()` exists in monitor but no REST endpoint exposed -- feature gap, not bug
 - Docker container logs: zero errors, zero warnings
+
+### 5-Browser Matrix (80/80 PASS)
+| Browser | Tests | Result |
+|---------|-------|--------|
+| Chromium | 16 | 16/16 PASS |
+| Firefox | 16 | 16/16 PASS |
+| WebKit | 16 | 16/16 PASS |
+| Mobile Chrome | 16 | 16/16 PASS |
+| Mobile Safari | 16 | 16/16 PASS |
+
+### Three-End Consistency (2026-02-15)
+- **Local**: `7087477` (docs(ux-map): record 2026-02-15 real API walkthrough results)
+- **GitHub**: `f9dc0b1` (2 commits behind local -- `13b5f72` fix + `7087477` docs not yet pushed)
+- **Production VPS**: N/A (Docker-only local dev, no remote production deployment)
+- **Status**: Local ahead by 2 commits. Push pending user decision.
+
+### Task Closeout (2026-02-15)
+- **Skills**: N/A -- fixes are project-specific (port fallback, mobile nav strategy); no cross-project reusable pattern extracted.
+- **PDCA docs**: USER_EXPERIENCE_MAP.md updated (walkthrough results table); notes.md updated (evidence). PRD/SYSTEM_ARCHITECTURE/PLATFORM_OPTIMIZATION_PLAN unaffected (no feature/architecture/plan change).
+- **Rolling Ledger**: REQ-050 added; AR-008/AR-009 added to Anti-Regression Q&A.
+- **Deliverable**: D81 added.
+- **CLAUDE.md/AGENTS.md**: N/A -- no cross-task reusable rule produced.

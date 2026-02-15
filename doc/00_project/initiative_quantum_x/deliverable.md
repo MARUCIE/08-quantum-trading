@@ -93,6 +93,7 @@ Related:
 | D78 | 多角色头脑风暴（SOP 1.3） | PM/设计/SEO 三角色输出完成；冲突与决策记录形成；PDCA 四文档同步；Round1/2 验证通过 | brainstorm reports + doc updates + ai check + UX smoke | outputs/1.3/1-3-915e27e6/reports/final_report.md |
 | D79 | SEO Public Surface 落地（SOP 1.3 Continue） | public 页面、sitemap、robots、默认 app noindex 策略生效；build 与导航冒烟通过 | implementation report + build + UX smoke | outputs/1.3/1-3-826a518f/reports/seo_implementation_report.md |
 | D80 | SEO Runtime 回归守门（SOP 1.3 Continue v2） | `features/*` 与 `docs/*` 页面 metadata/JSON-LD 全量对齐；新增 `public-routes/sitemap/robots` 回归测试并通过；Round1/2 验证通过 | regression report + vitest + build + UX smoke + ai check | outputs/1.3/1-3-a7270c8c/reports/final_report.md |
+| D81 | 真实 API 全量打通 + UX Map 模拟 + E2E 卡点修复 | 12/12 API 端点真实数据（Binance REST）验证 OK；3 persona 流 PASS；5 浏览器矩阵 80/80 PASS；Docker port mismatch 修复；mobile navigation flake 修复 | API curl evidence + E2E logs + notes.md | doc/00_project/initiative_quantum_x/notes.md (2026-02-15 section), commits `13b5f72` + `7087477` |
 
 # Release/Deployment Notes
 - rollout strategy: Local development → Paper trading → Testnet → Production
