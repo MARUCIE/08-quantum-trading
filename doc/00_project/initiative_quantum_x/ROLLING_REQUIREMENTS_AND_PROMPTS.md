@@ -492,3 +492,15 @@ Reference: `AR-027` 已纳入本轮验证并保留触发器 `ux_gate_devserver_f
 | ID | Symptom | Root Cause | Fix | Verification | Prevention | Trigger |
 |---|---|---|---|---|---|---|
 | AR-035 | UX Round2 full-loop-closure API 调用返回 404（误报） | 未显式设置 `FULL_LOOP_API_BASE`，默认指向 `127.0.0.1:3001` 与实际 compose 端口不一致 | Round2 gate 脚本强制注入 `FULL_LOOP_API_BASE=http://127.0.0.1:4008` | `outputs/5.1/5-1-7ca0f855/logs/step4_playwright_ux_round2.log` | 发布守门/回归脚本统一设置 FULL_LOOP_API_BASE 与 PLAYWRIGHT_BASE_URL | "FULL_LOOP_API_BASE" |
+
+## Rolling Update (2026-02-15, DELETE /api/risk/events + Docker CORS)
+
+### Requirements Delta
+| ID | Date | Requirement | Priority | Status | Source | Notes |
+|---|---|---|---|---|---|---|
+| REQ-052 | 2026-02-15 | clearEvents() 必须通过 REST 端点暴露，供前端在账户切换时清除累积风险事件 | P3 | Done | UX walkthrough observation | Commit `1fd4f05` |
+
+### Anti-Regression Delta
+| ID | Symptom | Root Cause | Fix | Verification | Prevention | Trigger |
+|---|---|---|---|---|---|---|
+| AR-036 | Persona execution trader 账户页 "Request failed" / "Failed to load accounts" | Docker frontend 运行在 port 3008，但 CORS_ORIGINS 仅包含 3000/3001 | `.env.example` CORS_ORIGINS 增加 `http://localhost:3008` | 97/97 chromium PASS after CORS fix | `.env.example` 必须包含所有 Docker-mapped 前端端口 | "CORS" "Failed to load accounts" "Request failed" |

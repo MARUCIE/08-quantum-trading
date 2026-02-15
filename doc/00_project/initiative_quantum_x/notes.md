@@ -1412,3 +1412,12 @@ Runtime: 15.2 minutes
 - **Rolling Ledger**: REQ-050 added; AR-008/AR-009 added to Anti-Regression Q&A.
 - **Deliverable**: D81 added.
 - **CLAUDE.md/AGENTS.md**: N/A -- no cross-task reusable rule produced.
+
+### Feature: DELETE /api/risk/events (2026-02-15)
+- **Root cause**: UX walkthrough found risk events accumulate across account switches; `clearEvents()` existed in `backend/src/risk/monitor.ts:104` but no REST endpoint
+- **Fix**: Added `DELETE /api/risk/events` in `routes.ts` + OpenAPI spec in `openapi.yaml`
+- **Docker CORS**: `.env.example` CORS_ORIGINS missing port 3008 (Docker-mapped frontend); persona tests showed "Request failed" on accounts page
+- **Verification**: `curl -X DELETE` returns HTTP 204; 97/97 chromium E2E PASS
+- **Three-End Consistency**: Local = GitHub = `739b41d`; Production = N/A (local Docker dev)
+- **Commits**: `1fd4f05` (feat) + `739b41d` (docs/evidence)
+- **Deliverable**: D82
